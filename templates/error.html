@@ -1,0 +1,299 @@
+{% extends "layout.html" %}
+
+{% block title %}ข้อผิดพลาด {{ error_code or '500' }} - ระบบลงเวลา Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-container {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 3rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        max-width: 600px;
+        margin: 2rem auto;
+        text-align: center;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .error-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--error-100), var(--error-50));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        border: 8px solid var(--error-50);
+    }
+    
+    .error-icon i {
+        font-size: 3rem;
+        color: var(--error-500);
+    }
+    
+    .error-code {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--error-600);
+        margin-bottom: 1rem;
+        letter-spacing: -0.05em;
+        text-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);
+    }
+    
+    .error-message {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--gray-900);
+        letter-spacing: -0.025em;
+    }
+    
+    .error-description {
+        color: var(--gray-600);
+        margin-bottom: 2.5rem;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        max-width: 480px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+    
+    .error-btn {
+        padding: 1rem 2rem;
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .error-btn-primary {
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        color: white;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .error-btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .error-btn-secondary {
+        background: white;
+        color: var(--gray-700);
+        border: 2px solid var(--gray-200);
+    }
+    
+    .error-btn-secondary:hover {
+        background: var(--gray-50);
+        color: var(--gray-800);
+        text-decoration: none;
+        border-color: var(--gray-300);
+        transform: translateY(-1px);
+    }
+    
+    .error-details {
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        text-align: left;
+    }
+    
+    .error-details h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .error-details ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .error-details li {
+        padding: 0.5rem 0;
+        color: var(--gray-600);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .error-details li i {
+        color: var(--primary-500);
+        width: 16px;
+    }
+    
+    .technical-info {
+        background: var(--gray-800);
+        color: var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.875rem;
+        text-align: left;
+    }
+    
+    .technical-info h4 {
+        color: white;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+    
+    .technical-info ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .technical-info li {
+        padding: 0.25rem 0;
+        color: var(--gray-300);
+    }
+    
+    .technical-info strong {
+        color: var(--primary-400);
+    }
+    
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 640px) {
+        .error-container {
+            margin: 1rem;
+            padding: 2rem;
+        }
+        
+        .error-code {
+            font-size: 3rem;
+        }
+        
+        .error-message {
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .error-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-icon">
+        {% if error_code == '404' %}
+            <i class="fas fa-search"></i>
+        {% elif error_code == '403' %}
+            <i class="fas fa-lock"></i>
+        {% elif error_code == '401' %}
+            <i class="fas fa-user-slash"></i>
+        {% else %}
+            <i class="fas fa-exclamation-triangle"></i>
+        {% endif %}
+    </div>
+    
+    <div class="error-code">{{ error_code or '500' }}</div>
+    <h1 class="error-message">{{ error_message or 'เกิดข้อผิดพลาดบางอย่าง' }}</h1>
+    <p class="error-description">
+        {{ error_description or 'เราพบข้อผิดพลาดที่ไม่คาดคิดขณะประมวลผลคำขอของคุณ ทีมงานของเราได้รับแจ้งแล้วและกำลังดำเนินการแก้ไขปัญหานี้' }}
+    </p>
+    
+    <div class="action-buttons">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('index') }}" class="error-btn error-btn-primary">
+                <i class="fas fa-arrow-left"></i>
+                กลับสู่หน้าหลัก
+            </a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="error-btn error-btn-primary">
+                <i class="fas fa-sign-in-alt"></i>
+                ไปยังหน้าเข้าสู่ระบบ
+            </a>
+        {% endif %}
+        <button onclick="window.location.reload()" class="error-btn error-btn-secondary">
+            <i class="fas fa-redo"></i>
+            ลองใหม่อีกครั้ง
+        </button>
+    </div>
+    
+    <div class="error-details">
+        <h3>
+            <i class="fas fa-lightbulb"></i>
+            สิ่งที่คุณสามารถทำได้:
+        </h3>
+        <ul>
+            <li>
+                <i class="fas fa-refresh"></i>
+                รีเฟรชหน้าเว็บและลองใหม่อีกครั้ง
+            </li>
+            <li>
+                <i class="fas fa-wifi"></i>
+                ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต
+            </li>
+            <li>
+                <i class="fas fa-clock"></i>
+                รอสักครู่แล้วลองใหม่อีกครั้ง
+            </li>
+            <li>
+                <i class="fas fa-envelope"></i>
+                ติดต่อฝ่าย IT หากปัญหายังคงอยู่
+            </li>
+        </ul>
+    </div>
+    
+    {% if error_code == '500' or error_code == 500 %}
+    <div class="technical-info">
+        <h4><i class="fas fa-code"></i> ข้อมูลทางเทคนิค</h4>
+        <p style="margin-bottom: 1rem; color: var(--gray-400);">
+            หากข้อผิดพลาดนี้ยังคงอยู่ กรุณาติดต่อผู้ดูแลระบบพร้อมข้อมูลต่อไปนี้:
+        </p>
+        <ul>
+            <li><strong>เวลา:</strong> {{ moment().format('YYYY-MM-DD HH:mm:ss UTC') if moment else 'ไม่มีข้อมูล' }}</li>
+            <li><strong>รหัสข้อผิดพลาด:</strong> {{ error_code or '500' }}</li>
+            <li><strong>URL คำขอ:</strong> {{ request.url if request else 'ไม่มีข้อมูล' }}</li>
+            <li><strong>User Agent:</strong> {{ request.headers.get('User-Agent', 'ไม่มีข้อมูล')[:50] + '...' if request and request.headers.get('User-Agent') and request.headers.get('User-Agent')|length > 50 else (request.headers.get('User-Agent', 'ไม่มีข้อมูล') if request else 'ไม่มีข้อมูล') }}</li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

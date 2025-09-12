@@ -1,0 +1,594 @@
+{% extends "layout.html" %}
+
+{% block title %}จัดการพนักงาน - ระบบลงเวลาทำงาน{% endblock %}
+
+{% block extra_css %}
+<style>
+    .employees-page {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+    
+    .header-text h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin: 0;
+    }
+    
+    .header-text p {
+        color: var(--gray-600);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    .back-btn {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .back-btn:hover {
+        background: var(--gray-200);
+        color: var(--gray-800);
+        text-decoration: none;
+    }
+    
+    .employees-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .employee-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .employee-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .employee-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+    }
+    
+    .employee-card.admin::before {
+        background: linear-gradient(90deg, var(--warning-500), var(--warning-600));
+    }
+    
+    .employee-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .employee-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--gray-200);
+    }
+    
+    .employee-avatar-placeholder {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gray-300), var(--gray-400));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        border: 3px solid var(--gray-200);
+    }
+    
+    .employee-info h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0 0 0.25rem 0;
+    }
+    
+    .employee-email {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    .employee-details {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: var(--gray-50);
+        border-radius: var(--radius-md);
+    }
+    
+    .detail-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--primary-100);
+        color: var(--primary-600);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+    }
+    
+    .detail-content {
+        flex: 1;
+    }
+    
+    .detail-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0;
+    }
+    
+    .detail-value {
+        font-weight: 500;
+        color: var(--gray-900);
+        margin: 0;
+    }
+    
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .role-employee {
+        background: var(--primary-50);
+        color: var(--primary-700);
+        border: 1px solid var(--primary-200);
+    }
+    
+    .role-admin {
+        background: var(--warning-50);
+        color: var(--warning-700);
+        border: 1px solid var(--warning-200);
+    }
+    
+    .employee-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+    
+    .action-btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn-view {
+        background: var(--primary-500);
+        color: white;
+    }
+    
+    .btn-view:hover {
+        background: var(--primary-600);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-role {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+    }
+    
+    .btn-role:hover {
+        background: var(--gray-200);
+        color: var(--gray-800);
+    }
+    
+    .btn-role.admin {
+        background: var(--warning-100);
+        color: var(--warning-700);
+        border: 1px solid var(--warning-300);
+    }
+    
+    .btn-role.admin:hover {
+        background: var(--warning-200);
+        color: var(--warning-800);
+    }
+    
+    .no-employees {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--gray-500);
+        background: white;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+    }
+    
+    .no-employees-icon {
+        font-size: 4rem;
+        color: var(--gray-300);
+        margin-bottom: 1rem;
+    }
+    
+    /* Loading and Success States */
+    .loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .employees-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .employee-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="employees-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <div class="header-text">
+                <h1>จัดการพนักงาน</h1>
+                <p>ดูรายชื่อพนักงานและจัดการสิทธิ์การเข้าถึง</p>
+            </div>
+        </div>
+        <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            กลับสู่แดชบอร์ด
+        </a>
+    </div>
+
+    <!-- Employees Grid -->
+    {% if employees %}
+    <div class="employees-grid">
+        {% for employee in employees %}
+        <div class="employee-card {% if employee.is_admin %}admin{% endif %}">
+            <div class="employee-header">
+                {% if employee.picture_url %}
+                <img src="{{ employee.picture_url }}" alt="Profile" class="employee-avatar">
+                {% else %}
+                <div class="employee-avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+                <div class="employee-info">
+                    <h3>{{ employee.name or 'ไม่ระบุชื่อ' }}</h3>
+                    <p class="employee-email">{{ employee.email }}</p>
+                </div>
+            </div>
+            
+            <div class="employee-details">
+                <div class="detail-item">
+                    <div class="detail-icon">
+                        <i class="fas fa-id-badge"></i>
+                    </div>
+                    <div class="detail-content">
+                        <p class="detail-label">รหัสพนักงาน</p>
+                        <p class="detail-value">#{{ employee.id }}</p>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">
+                        <i class="fas fa-user-tag"></i>
+                    </div>
+                    <div class="detail-content">
+                        <p class="detail-label">บทบาท</p>
+                        <div class="detail-value">
+                            <span class="role-badge {% if employee.is_admin %}role-admin{% else %}role-employee{% endif %}">
+                                <i class="fas {% if employee.is_admin %}fa-user-shield{% else %}fa-user{% endif %}"></i>
+                                {% if employee.is_admin %}ผู้ดูแลระบบ{% else %}พนักงาน{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <div class="detail-content">
+                        <p class="detail-label">วันที่เข้าร่วม</p>
+                        <p class="detail-value">
+                            {% if employee.created_at %}
+                                {{ employee.created_at.strftime('%d/%m/%Y') if employee.created_at.strftime else employee.created_at }}
+                            {% else %}
+                                ไม่ระบุ
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="employee-actions">
+                <a href="{{ url_for('admin_employee_detail', employee_id=employee.id) }}" class="action-btn btn-view">
+                    <i class="fas fa-eye"></i>
+                    ดูรายละเอียด
+                </a>
+                
+                {% if employee.id != current_user.id %}
+                <button class="action-btn btn-role {% if employee.is_admin %}admin{% endif %}" 
+                        onclick="toggleRole({{ employee.id }}, '{% if employee.is_admin %}employee{% else %}admin{% endif %}')">
+                    <i class="fas {% if employee.is_admin %}fa-user-minus{% else %}fa-user-plus{% endif %}"></i>
+                    {% if employee.is_admin %}ลดสิทธิ์{% else %}เพิ่มสิทธิ์{% endif %}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-employees">
+        <div class="no-employees-icon">
+            <i class="fas fa-users-slash"></i>
+        </div>
+        <h3>ไม่พบข้อมูลพนักงาน</h3>
+        <p>ยังไม่มีพนักงานในระบบ พนักงานจะปรากฏที่นี่เมื่อเข้าสู่ระบบครั้งแรก</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Get CSRF token
+function getCSRFToken() {
+    return document.querySelector('meta[name=csrf-token]').getAttribute('content');
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    // Add notification styles if not already present
+    if (!document.querySelector('#notification-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'notification-styles';
+        styles.textContent = `
+            .notification {
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: white;
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-xl);
+                border: 1px solid var(--gray-200);
+                padding: 1rem 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                z-index: 1000;
+                min-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            }
+            
+            .notification-success { border-left: 4px solid var(--success-500); }
+            .notification-error { border-left: 4px solid var(--error-500); }
+            .notification-info { border-left: 4px solid var(--primary-500); }
+            
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                flex: 1;
+            }
+            
+            .notification-content i { color: var(--primary-500); }
+            .notification-success .notification-content i { color: var(--success-500); }
+            .notification-error .notification-content i { color: var(--error-500); }
+            
+            .notification-close {
+                background: none;
+                border: none;
+                color: var(--gray-400);
+                cursor: pointer;
+                padding: 0.25rem;
+                border-radius: var(--radius-sm);
+                transition: all 0.2s ease;
+            }
+            
+            .notification-close:hover {
+                background: var(--gray-100);
+                color: var(--gray-600);
+            }
+            
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @media (max-width: 640px) {
+                .notification {
+                    top: 1rem;
+                    right: 1rem;
+                    left: 1rem;
+                    min-width: auto;
+                }
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideIn 0.3s ease-out reverse';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
+
+// Toggle employee role
+async function toggleRole(employeeId, newRole) {
+    const button = event.target.closest('.btn-role');
+    const originalHTML = button.innerHTML;
+    
+    try {
+        // Show loading state
+        button.innerHTML = `
+            <div class="loading-spinner"></div>
+            กำลังอัปเดต...
+        `;
+        button.classList.add('loading');
+        button.disabled = true;
+        
+        const response = await fetch(`/admin/employee/${employeeId}/role`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ role: newRole })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
+            
+            // Reload page after short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            throw new Error(data.error || 'การอัปเดตบทบาทล้มเหลว');
+        }
+    } catch (error) {
+        console.error('Role update error:', error);
+        showNotification(error.message || 'เกิดข้อผิดพลาดในการอัปเดตบทบาท', 'error');
+        
+        // Reset button
+        button.innerHTML = originalHTML;
+        button.classList.remove('loading');
+        button.disabled = false;
+    }
+}
+</script>
+{% endblock %}
