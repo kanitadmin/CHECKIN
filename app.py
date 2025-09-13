@@ -1196,6 +1196,28 @@ def admin_employees():
         return redirect(url_for('admin_dashboard'))
 
 
+@app.route('/admin/employees/api')
+@login_required
+@admin_required
+def admin_get_all_employees():
+    """Get all employees (for department management)"""
+    try:
+        employee_repo = EmployeeRepository()
+        employees = employee_repo.get_all_employees()
+        
+        # Convert to dict format
+        employee_list = [emp.to_dict() for emp in employees]
+        
+        return jsonify({
+            'success': True,
+            'employees': employee_list
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting all employees: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการโหลดข้อมูลพนักงาน'})
+
+
 @app.route('/admin/employee/<int:employee_id>')
 @login_required
 @admin_required
@@ -1774,6 +1796,11 @@ def admin_delete_department(department_id):
         if not department:
             return jsonify({'success': False, 'error': 'ไม่พบฝ่ายที่ระบุ'})
         
+        # Check if department has employees
+        employee_count = department_repo.get_department_employee_count(department_id)
+        if employee_count > 0:
+            return jsonify({'success': False, 'error': f'ไม่สามารถลบฝ่ายที่มีพนักงาน {employee_count} คนได้'})
+        
         # Delete department
         success = department_repo.delete_department(department_id)
         
@@ -1789,6 +1816,87 @@ def admin_delete_department(department_id):
     except Exception as e:
         logger.error(f"Error deleting department {department_id}: {e}")
         return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการลบฝ่าย'})
+
+
+@app.route('/admin/departments/<int:department_id>/employees')
+@login_required
+@admin_required
+def admin_get_department_employees(department_id):
+    """Get employees in a department"""
+    try:
+        # Initialize repositories
+        department_repo = DepartmentRepository()
+        employee_repo = EmployeeRepository()
+        
+        # Check if department exists
+        department = department_repo.get_department_by_id(department_id)
+        if not department:
+            return jsonify({'success': False, 'error': 'ไม่พบฝ่ายที่ระบุ'})
+        
+        # Get employees in department
+        employees = employee_repo.get_employees_by_department(department_id)
+        
+        # Convert to dict format
+        employee_list = [emp.to_dict() for emp in employees]
+        
+        return jsonify({
+            'success': True,
+            'employees': employee_list,
+            'department': department.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting employees for department {department_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการโหลดข้อมูลพนักงาน'})
+
+
+@app.route('/admin/employees/<int:employee_id>/department', methods=['POST'])
+@login_required
+@admin_required
+def admin_assign_employee_department(employee_id):
+    """Assign employee to department"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'ไม่พบข้อมูลที่ส่งมา'})
+        
+        # Get department_id from request (can be None to unassign)
+        department_id = data.get('department_id')
+        
+        # Initialize employee repository
+        employee_repo = EmployeeRepository()
+        
+        # Check if employee exists
+        employee = employee_repo.find_by_id(employee_id)
+        if not employee:
+            return jsonify({'success': False, 'error': 'ไม่พบพนักงานที่ระบุ'})
+        
+        # Validate department if provided
+        if department_id is not None:
+            department_repo = DepartmentRepository()
+            department = department_repo.get_department_by_id(department_id)
+            if not department:
+                return jsonify({'success': False, 'error': 'ไม่พบฝ่ายที่ระบุ'})
+        
+        # Update employee department
+        success = employee_repo.update_employee_department(employee_id, department_id)
+        
+        if not success:
+            return jsonify({'success': False, 'error': 'ไม่สามารถอัปเดตข้อมูลพนักงานได้'})
+        
+        action = "ย้ายพนักงานไปยังฝ่าย" if department_id else "นำพนักงานออกจากฝ่าย"
+        department_name = department.name if department_id else ""
+        logger.info(f"Admin {current_user.email} {action} {department_name}: {employee.name}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'อัปเดตข้อมูลพนักงานสำเร็จ'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error assigning employee {employee_id} to department: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลพนักงาน'})
 
 
 if __name__ == '__main__':

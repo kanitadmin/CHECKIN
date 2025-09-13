@@ -19,7 +19,7 @@ class Employee(UserMixin):
     for Flask-Login integration to manage user sessions.
     """
     
-    def __init__(self, id: int, google_id: str, email: str, name: str = None, picture_url: str = None, created_at: str = None, role: str = 'employee'):
+    def __init__(self, id: int, google_id: str, email: str, name: str = None, picture_url: str = None, created_at: str = None, role: str = 'employee', department_id: int = None):
         """
         Initialize Employee instance
         
@@ -31,6 +31,7 @@ class Employee(UserMixin):
             picture_url: URL to employee's profile picture
             created_at: Account creation timestamp
             role: User role (employee or admin)
+            department_id: Department ID (foreign key)
         """
         self.id = id
         self.google_id = google_id
@@ -39,6 +40,7 @@ class Employee(UserMixin):
         self.picture_url = picture_url
         self.created_at = created_at
         self.role = role
+        self.department_id = department_id
     
     def get_id(self) -> str:
         """
@@ -90,7 +92,8 @@ class Employee(UserMixin):
             'name': self.name,
             'picture_url': self.picture_url,
             'created_at': self.created_at,
-            'role': self.role
+            'role': self.role,
+            'department_id': self.department_id
         }
     
     def __repr__(self) -> str:
@@ -122,7 +125,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role
+                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
                 FROM employees 
                 WHERE google_id = %s
             """
@@ -138,7 +141,8 @@ class EmployeeRepository:
                     name=row['name'],
                     picture_url=row['picture_url'],
                     created_at=row['created_at'],
-                    role=row.get('role', 'employee')
+                    role=row.get('role', 'employee'),
+                    department_id=row.get('department_id')
                 )
             
             return None
@@ -159,7 +163,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role
+                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
                 FROM employees 
                 WHERE email = %s
             """
@@ -175,7 +179,8 @@ class EmployeeRepository:
                     name=row['name'],
                     picture_url=row['picture_url'],
                     created_at=row['created_at'],
-                    role=row.get('role', 'employee')
+                    role=row.get('role', 'employee'),
+                    department_id=row.get('department_id')
                 )
             
             return None
@@ -196,7 +201,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role
+                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
                 FROM employees 
                 WHERE id = %s
             """
@@ -212,7 +217,8 @@ class EmployeeRepository:
                     name=row['name'],
                     picture_url=row['picture_url'],
                     created_at=row['created_at'],
-                    role=row.get('role', 'employee')
+                    role=row.get('role', 'employee'),
+                    department_id=row.get('department_id')
                 )
             
             return None
@@ -230,7 +236,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role
+                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
                 FROM employees 
                 ORDER BY name
             """
@@ -246,7 +252,8 @@ class EmployeeRepository:
                     name=row['name'],
                     picture_url=row['picture_url'],
                     created_at=row['created_at'],
-                    role=row.get('role', 'employee')
+                    role=row.get('role', 'employee'),
+                    department_id=row.get('department_id')
                 ))
             
             return employees
@@ -279,6 +286,70 @@ class EmployeeRepository:
         except DatabaseQueryError as e:
             logger.error(f"Failed to update employee role for ID {employee_id}: {e}")
             return False
+    
+    def update_employee_department(self, employee_id: int, department_id: int) -> bool:
+        """
+        Update employee department assignment
+        
+        Args:
+            employee_id: Database primary key
+            department_id: Department ID to assign (None to unassign)
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            query = """
+                UPDATE employees 
+                SET department_id = %s 
+                WHERE id = %s
+            """
+            
+            self.db_manager.execute_query(query, (department_id, employee_id))
+            return True
+            
+        except DatabaseQueryError as e:
+            logger.error(f"Failed to update employee department for ID {employee_id}: {e}")
+            return False
+    
+    def get_employees_by_department(self, department_id: int) -> List[Employee]:
+        """
+        Get all employees in a specific department
+        
+        Args:
+            department_id: Department ID
+            
+        Returns:
+            List of Employee objects
+        """
+        try:
+            query = """
+                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
+                FROM employees 
+                WHERE department_id = %s
+                ORDER BY name
+            """
+            
+            results = self.db_manager.execute_query(query, (department_id,), fetch_results=True)
+            
+            employees = []
+            for row in results:
+                employees.append(Employee(
+                    id=row['id'],
+                    google_id=row['google_id'],
+                    email=row['email'],
+                    name=row['name'],
+                    picture_url=row['picture_url'],
+                    created_at=row['created_at'],
+                    role=row.get('role', 'employee'),
+                    department_id=row.get('department_id')
+                ))
+            
+            return employees
+            
+        except DatabaseQueryError as e:
+            logger.error(f"Failed to get employees by department {department_id}: {e}")
+            raise
 
 
 class Department:
@@ -490,6 +561,34 @@ class DepartmentRepository:
         except DatabaseQueryError as e:
             logger.error(f"Failed to delete department ID {department_id}: {e}")
             return False
+    
+    def get_department_employee_count(self, department_id: int) -> int:
+        """
+        Get the number of employees in a department
+        
+        Args:
+            department_id: Department ID
+            
+        Returns:
+            Number of employees in the department
+        """
+        try:
+            query = """
+                SELECT COUNT(*) as count
+                FROM employees
+                WHERE department_id = %s
+            """
+            
+            results = self.db_manager.execute_query(query, (department_id,), fetch_results=True)
+            
+            if results:
+                return results[0]['count']
+            
+            return 0
+            
+        except DatabaseQueryError as e:
+            logger.error(f"Failed to get employee count for department {department_id}: {e}")
+            return 0
 
 
 class AttendanceRepository:

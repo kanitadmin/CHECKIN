@@ -363,6 +363,35 @@ def migrate_database() -> None:
         else:
             logger.info("Departments table already exists, skipping creation")
         
+        # Check if department_id column exists in employees table
+        check_department_id_column_query = """
+            SELECT COUNT(*) as count
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = %s 
+            AND TABLE_NAME = 'employees' 
+            AND COLUMN_NAME = 'department_id'
+        """
+        
+        result = db_manager.execute_query(
+            check_department_id_column_query, 
+            (os.getenv('DB_NAME'),), 
+            fetch_results=True
+        )
+        
+        if result and result[0]['count'] == 0:
+            logger.info("Adding department_id column to employees table...")
+            add_department_id_column_query = """
+                ALTER TABLE employees 
+                ADD COLUMN department_id INT NULL,
+                ADD CONSTRAINT fk_employee_department 
+                FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
+                ADD INDEX idx_department_id (department_id)
+            """
+            db_manager.execute_query(add_department_id_column_query)
+            logger.info("Department ID column added successfully")
+        else:
+            logger.info("Department ID column already exists, skipping migration")
+        
         logger.info("Database migrations completed successfully")
         
     except Exception as e:

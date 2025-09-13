@@ -43,6 +43,31 @@
         gap: 0.5rem;
     }
     
+    .department-employees {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .employee-list {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 0.5rem;
+    }
+    
+    .employee-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .employee-item:last-child {
+        border-bottom: none;
+    }
+    
     .modal {
         display: none;
         position: fixed;
@@ -133,6 +158,24 @@
         color: var(--gray-700);
         margin-bottom: 0.5rem;
     }
+    
+    .assign-employee-modal .employee-search {
+        margin-bottom: 1rem;
+    }
+    
+    .assign-employee-modal .employee-option {
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        cursor: pointer;
+    }
+    
+    .assign-employee-modal .employee-option:hover {
+        background: var(--gray-100);
+    }
+    
+    .assign-employee-modal .employee-option.selected {
+        background: var(--primary-100);
+    }
 </style>
 {% endblock %}
 
@@ -181,6 +224,18 @@
                     <p class="department-description">{{ department.description }}</p>
                     {% endif %}
                     <small class="text-muted">สร้างเมื่อ: {{ department.created_at }}</small>
+                    
+                    <div class="department-employees">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="h6 mb-0">พนักงานในฝายนี้</h4>
+                            <button class="btn btn-sm btn-primary assign-employee-btn" data-department-id="{{ department.id }}">
+                                <i class="fas fa-user-plus"></i> จัดการพนักงาน
+                            </button>
+                        </div>
+                        <div class="employee-list" id="employeeList-{{ department.id }}">
+                            <!-- Employee list will be loaded here -->
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             {% else %}
@@ -240,6 +295,29 @@
         </div>
     </div>
 </div>
+
+<!-- Assign Employee Modal -->
+<div id="assignEmployeeModal" class="modal assign-employee-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">จัดการพนักงานในฝาย</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="assignDepartmentId">
+            <div class="form-group employee-search">
+                <label for="employeeSearch">ค้นหาพนักงาน</label>
+                <input type="text" id="employeeSearch" class="form-control" placeholder="พิมพ์ชื่อหรืออีเมลพนักงาน">
+            </div>
+            <div id="employeeOptions">
+                <!-- Employee options will be loaded here -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelAssignBtn">ปิด</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block admin_extra_js %}
@@ -248,14 +326,22 @@
     const addDepartmentBtn = document.getElementById('addDepartmentBtn');
     const departmentModal = document.getElementById('departmentModal');
     const deleteModal = document.getElementById('deleteModal');
+    const assignEmployeeModal = document.getElementById('assignEmployeeModal');
     const departmentForm = document.getElementById('departmentForm');
     const modalTitle = document.getElementById('modalTitle');
     const departmentIdInput = document.getElementById('departmentId');
     const departmentNameInput = document.getElementById('departmentName');
     const departmentDescriptionInput = document.getElementById('departmentDescription');
     const deleteDepartmentIdInput = document.getElementById('deleteDepartmentId');
+    const assignDepartmentIdInput = document.getElementById('assignDepartmentId');
+    const employeeSearchInput = document.getElementById('employeeSearch');
     const saveDepartmentBtn = document.getElementById('saveDepartmentBtn');
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const cancelAssignBtn = document.getElementById('cancelAssignBtn');
+    
+    // Global variables
+    let allEmployees = [];
+    let departmentEmployees = {};
     
     // Event Listeners
     addDepartmentBtn.addEventListener('click', showAddDepartmentModal);
@@ -265,19 +351,83 @@
     document.querySelectorAll('.delete-department-btn').forEach(btn => {
         btn.addEventListener('click', showDeleteModal);
     });
+    document.querySelectorAll('.assign-employee-btn').forEach(btn => {
+        btn.addEventListener('click', showAssignEmployeeModal);
+    });
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', closeModal);
     });
     document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
     document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+    cancelAssignBtn.addEventListener('click', closeAssignModal);
     saveDepartmentBtn.addEventListener('click', saveDepartment);
     confirmDeleteBtn.addEventListener('click', deleteDepartment);
+    employeeSearchInput.addEventListener('input', filterEmployees);
+    
+    // Load all employees on page load
+    document.addEventListener('DOMContentLoaded', loadAllEmployees);
     
     // Close modals when clicking outside
     window.addEventListener('click', (e) => {
         if (e.target === departmentModal) closeModal();
         if (e.target === deleteModal) closeDeleteModal();
+        if (e.target === assignEmployeeModal) closeAssignModal();
     });
+    
+    // Load all employees
+    function loadAllEmployees() {
+        fetch('/admin/employees/api')
+            .then(response => response.json())
+            .then(data => {
+                if (data.employees) {
+                    allEmployees = data.employees;
+                    // Load employees for each department
+                    document.querySelectorAll('.department-card').forEach(card => {
+                        const departmentId = card.dataset.departmentId;
+                        loadDepartmentEmployees(departmentId);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading employees:', error);
+            });
+    }
+    
+    // Load employees for a specific department
+    function loadDepartmentEmployees(departmentId) {
+        fetch(`/admin/departments/${departmentId}/employees`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const employeeList = document.getElementById(`employeeList-${departmentId}`);
+                    if (employeeList) {
+                        if (data.employees && data.employees.length > 0) {
+                            employeeList.innerHTML = data.employees.map(emp => `
+                                <div class="employee-item">
+                                    <span>${emp.name || emp.email}</span>
+                                    <button class="btn btn-sm btn-danger remove-employee-btn" 
+                                            data-employee-id="${emp.id}" 
+                                            data-department-id="${departmentId}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            `).join('');
+                            
+                            // Add event listeners to remove buttons
+                            employeeList.querySelectorAll('.remove-employee-btn').forEach(btn => {
+                                btn.addEventListener('click', removeEmployeeFromDepartment);
+                            });
+                        } else {
+                            employeeList.innerHTML = '<p class="text-muted">ไม่มีพนักงานในฝายนี้</p>';
+                        }
+                    }
+                    departmentEmployees[departmentId] = data.employees || [];
+                }
+            })
+            .catch(error => {
+                console.error('Error loading department employees:', error);
+            });
+    }
     
     // Show Add Department Modal
     function showAddDepartmentModal() {
@@ -320,6 +470,196 @@
         deleteModal.classList.add('show');
     }
     
+    // Show Assign Employee Modal
+    function showAssignEmployeeModal(e) {
+        const departmentId = e.target.closest('.assign-employee-btn').dataset.departmentId;
+        assignDepartmentIdInput.value = departmentId;
+        
+        // Load employees for this department
+        fetch(`/admin/departments/${departmentId}/employees`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    departmentEmployees[departmentId] = data.employees || [];
+                    renderEmployeeOptions(departmentId);
+                    assignEmployeeModal.classList.add('show');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('เกิดข้อผิดพลาดในการโหลดข้อมูลพนักงาน', 'error');
+            });
+    }
+    
+    // Render employee options in assign modal
+    function renderEmployeeOptions(departmentId) {
+        const departmentEmpIds = (departmentEmployees[departmentId] || []).map(emp => emp.id);
+        const employeeOptions = document.getElementById('employeeOptions');
+        
+        if (allEmployees.length > 0) {
+            employeeOptions.innerHTML = allEmployees.map(emp => {
+                const isSelected = departmentEmpIds.includes(emp.id);
+                return `
+                    <div class="employee-option ${isSelected ? 'selected' : ''}" 
+                         data-employee-id="${emp.id}" 
+                         data-department-id="${departmentId}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>${emp.name || emp.email}</span>
+                            <span class="badge ${isSelected ? 'bg-success' : 'bg-secondary'}">
+                                ${isSelected ? 'อยู่ในฝายนี้' : 'เพิ่ม'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add event listeners to employee options
+            employeeOptions.querySelectorAll('.employee-option').forEach(option => {
+                option.addEventListener('click', toggleEmployeeAssignment);
+            });
+        } else {
+            employeeOptions.innerHTML = '<p class="text-muted">ไม่พบข้อมูลพนักงาน</p>';
+        }
+    }
+    
+    // Filter employees based on search input
+    function filterEmployees() {
+        const searchTerm = employeeSearchInput.value.toLowerCase();
+        const departmentId = assignDepartmentIdInput.value;
+        const employeeOptions = document.getElementById('employeeOptions');
+        
+        if (allEmployees.length > 0) {
+            const filteredEmployees = searchTerm ? 
+                allEmployees.filter(emp => 
+                    (emp.name && emp.name.toLowerCase().includes(searchTerm)) ||
+                    (emp.email && emp.email.toLowerCase().includes(searchTerm))
+                ) : allEmployees;
+            
+            const departmentEmpIds = (departmentEmployees[departmentId] || []).map(emp => emp.id);
+            
+            employeeOptions.innerHTML = filteredEmployees.map(emp => {
+                const isSelected = departmentEmpIds.includes(emp.id);
+                return `
+                    <div class="employee-option ${isSelected ? 'selected' : ''}" 
+                         data-employee-id="${emp.id}" 
+                         data-department-id="${departmentId}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>${emp.name || emp.email}</span>
+                            <span class="badge ${isSelected ? 'bg-success' : 'bg-secondary'}">
+                                ${isSelected ? 'อยู่ในฝายนี้' : 'เพิ่ม'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add event listeners to employee options
+            employeeOptions.querySelectorAll('.employee-option').forEach(option => {
+                option.addEventListener('click', toggleEmployeeAssignment);
+            });
+        }
+    }
+    
+    // Toggle employee assignment to department
+    function toggleEmployeeAssignment(e) {
+        const employeeId = e.currentTarget.dataset.employeeId;
+        const departmentId = e.currentTarget.dataset.departmentId;
+        
+        // Toggle the UI immediately for better UX
+        e.currentTarget.classList.toggle('selected');
+        const badge = e.currentTarget.querySelector('.badge');
+        if (badge) {
+            if (e.currentTarget.classList.contains('selected')) {
+                badge.className = 'badge bg-success';
+                badge.textContent = 'อยู่ในฝายนี้';
+            } else {
+                badge.className = 'badge bg-secondary';
+                badge.textContent = 'เพิ่ม';
+            }
+        }
+        
+        // Send request to update employee department
+        fetch(`/admin/employees/${employeeId}/department`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                department_id: e.currentTarget.classList.contains('selected') ? departmentId : null
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Refresh the department employee list
+                loadDepartmentEmployees(departmentId);
+            } else {
+                // Revert UI change on error
+                e.currentTarget.classList.toggle('selected');
+                if (badge) {
+                    if (e.currentTarget.classList.contains('selected')) {
+                        badge.className = 'badge bg-success';
+                        badge.textContent = 'อยู่ในฝายนี้';
+                    } else {
+                        badge.className = 'badge bg-secondary';
+                        badge.textContent = 'เพิ่ม';
+                    }
+                }
+                showNotification(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Revert UI change on error
+            e.currentTarget.classList.toggle('selected');
+            if (badge) {
+                if (e.currentTarget.classList.contains('selected')) {
+                    badge.className = 'badge bg-success';
+                    badge.textContent = 'อยู่ในฝายนี้';
+                } else {
+                    badge.className = 'badge bg-secondary';
+                    badge.textContent = 'เพิ่ม';
+                }
+            }
+            showNotification('เกิดข้อผิดพลาดในการอัปเดตข้อมูลพนักงาน', 'error');
+        });
+    }
+    
+    // Remove employee from department
+    function removeEmployeeFromDepartment(e) {
+        const employeeId = e.target.closest('.remove-employee-btn').dataset.employeeId;
+        const departmentId = e.target.closest('.remove-employee-btn').dataset.departmentId;
+        
+        // Send request to remove employee from department
+        fetch(`/admin/employees/${employeeId}/department`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                department_id: null
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Refresh the department employee list
+                loadDepartmentEmployees(departmentId);
+                // Also refresh the assign modal if it's open
+                if (assignEmployeeModal.classList.contains('show') && assignDepartmentIdInput.value === departmentId) {
+                    renderEmployeeOptions(departmentId);
+                }
+                showNotification('นำพนักงานออกจากฝายเรียบร้อย', 'success');
+            } else {
+                showNotification(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('เกิดข้อผิดพลาดในการนำพนักงานออกจากฝาย', 'error');
+        });
+    }
+    
     // Close Modals
     function closeModal() {
         departmentModal.classList.remove('show');
@@ -327,6 +667,10 @@
     
     function closeDeleteModal() {
         deleteModal.classList.remove('show');
+    }
+    
+    function closeAssignModal() {
+        assignEmployeeModal.classList.remove('show');
     }
     
     // Save Department
