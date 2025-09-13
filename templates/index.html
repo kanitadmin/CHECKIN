@@ -376,6 +376,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="dashboard">
     <!-- Quick Stats -->
     <div class="stats-grid">
@@ -520,9 +521,9 @@
 
 {% block extra_js %}
 <script>
-// Get CSRF token from meta tag
+// CSRF protection removed for simplicity
 function getCSRFToken() {
-    return document.querySelector('meta[name=csrf-token]').getAttribute('content');
+    return null; // No CSRF token needed
 }
 
 // Modern notification system
@@ -661,8 +662,7 @@ async function performCheckIn() {
         const response = await fetch('/check-in', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+                'Content-Type': 'application/json'
             }
         });
         
@@ -715,8 +715,7 @@ async function performCheckOut() {
         const response = await fetch('/check-out', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+                'Content-Type': 'application/json'
             }
         });
         

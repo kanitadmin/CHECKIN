@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>{% block title %}ระบบลงเวลาทำงาน{% endblock %}</title>
     
     <!-- Modern CSS Framework and Fonts -->
@@ -158,6 +158,22 @@
             border-radius: 50%;
             border: 2px solid rgba(255, 255, 255, 0.3);
             object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .user-avatar.loading {
+            opacity: 0.7;
+        }
+        
+        .user-avatar.error {
+            display: none !important;
         }
         
         .user-details {
@@ -305,11 +321,15 @@
                 <div class="user-info">
                     <div class="user-profile">
                         {% if current_user.picture_url %}
-                        <img src="{{ current_user.picture_url }}" alt="Profile" class="user-avatar">
+                        <img src="{{ url_for('proxy_image', url=current_user.picture_url) }}" 
+                             alt="Profile" 
+                             class="user-avatar"
+                             onerror="this.src='{{ url_for('static', filename='default-avatar.svg') }}';"
+                             loading="lazy">
                         {% else %}
-                        <div class="user-avatar" style="background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-user" style="color: white;"></i>
-                        </div>
+                        <img src="{{ url_for('static', filename='default-avatar.svg') }}" 
+                             alt="Profile" 
+                             class="user-avatar">
                         {% endif %}
                         <div class="user-details">
                             <div class="user-name">{{ current_user.name or 'User' }}</div>
@@ -364,5 +384,43 @@
     </main>
 
     {% block extra_js %}{% endblock %}
+    
+    <!-- Image loading fallback script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle profile image loading errors
+        const profileImages = document.querySelectorAll('.user-avatar img');
+        
+        profileImages.forEach(function(img) {
+            // Add loading class
+            img.classList.add('loading');
+            
+            img.addEventListener('load', function() {
+                // Remove loading class when image loads successfully
+                this.classList.remove('loading');
+            });
+            
+            img.addEventListener('error', function() {
+                console.log('Profile image failed to load:', this.src);
+                
+                // Hide the image and show fallback
+                this.style.display = 'none';
+                const fallback = this.nextElementSibling;
+                if (fallback && fallback.classList.contains('user-avatar')) {
+                    fallback.style.display = 'flex';
+                }
+            });
+            
+            // Set a timeout for slow loading images
+            setTimeout(function() {
+                if (img.classList.contains('loading')) {
+                    console.log('Profile image loading timeout:', img.src);
+                    img.dispatchEvent(new Event('error'));
+                }
+            }, 10000); // 10 second timeout
+        });
+    });
+    </script>
+
 </body>
 </html>

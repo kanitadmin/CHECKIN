@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Google Profile Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .image-test {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .test-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            object-fit: cover;
+        }
+        
+        .fallback-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #007bff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status.loading { background: #ffc107; color: #000; }
+        .status.success { background: #28a745; color: #fff; }
+        .status.error { background: #dc3545; color: #fff; }
+        
+        .url-input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖼️ Debug Google Profile Images</h1>
+    
+    <div class="debug-section">
+        <h2>Common Google Profile Image Issues</h2>
+        <ul>
+            <li><strong>HTTPS/HTTP mismatch:</strong> Google ส่ง HTTPS URL แต่เว็บเป็น HTTP</li>
+            <li><strong>URL หมดอายุ:</strong> Google profile image URLs มีอายุจำกัด</li>
+            <li><strong>CORS Policy:</strong> Google อาจบล็อกการโหลดรูปภาพจาก domain อื่น</li>
+            <li><strong>Content Security Policy:</strong> CSP headers บล็อกรูปภาพจาก external sources</li>
+            <li><strong>Network Issues:</strong> การเชื่อมต่อช้าหรือไม่เสถียร</li>
+        </ul>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Test Google Profile Image URLs</h2>
+        <p>ใส่ URL รูปภาพจาก Google เพื่อทดสอบ:</p>
+        
+        <input type="text" id="imageUrl" class="url-input" 
+               placeholder="https://lh3.googleusercontent.com/..." 
+               value="">
+        <button onclick="testImage()">Test Image</button>
+        
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Common Google Image URL Patterns</h2>
+        <div class="image-test">
+            <img src="https://lh3.googleusercontent.com/a/default-user" 
+                 class="test-image" 
+                 onload="updateStatus(this, 'success')"
+                 onerror="updateStatus(this, 'error'); showFallback(this)">
+            <div class="fallback-avatar">👤</div>
+            <div>
+                <strong>Default Google Avatar</strong><br>
+                <small>https://lh3.googleusercontent.com/a/default-user</small><br>
+                <span class="status loading">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="image-test">
+            <img src="https://via.placeholder.com/50x50/007bff/ffffff?text=OK" 
+                 class="test-image" 
+                 onload="updateStatus(this, 'success')"
+                 onerror="updateStatus(this, 'error'); showFallback(this)">
+            <div class="fallback-avatar">👤</div>
+            <div>
+                <strong>Test Placeholder Image</strong><br>
+                <small>https://via.placeholder.com/50x50/007bff/ffffff?text=OK</small><br>
+                <span class="status loading">Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Browser Console Log</h2>
+        <div id="consoleLog" class="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Solutions</h2>
+        <h3>1. Add Fallback Images</h3>
+        <pre><code>&lt;img src="{{ user.picture_url }}" 
+     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"&gt;
+&lt;div class="fallback-avatar" style="display: none;"&gt;
+    &lt;i class="fas fa-user"&gt;&lt;/i&gt;
+&lt;/div&gt;</code></pre>
+        
+        <h3>2. Update Content Security Policy</h3>
+        <pre><code>Content-Security-Policy: img-src 'self' data: https: *.googleusercontent.com;</code></pre>
+        
+        <h3>3. Use Proxy for Images</h3>
+        <pre><code># Flask route to proxy Google images
+@app.route('/proxy-image')
+def proxy_image():
+    url = request.args.get('url')
+    # Validate and proxy the image
+    return send_file(proxied_image)</code></pre>
+        
+        <h3>4. Cache Images Locally</h3>
+        <pre><code># Download and save Google profile images locally
+def cache_profile_image(google_image_url, user_id):
+    response = requests.get(google_image_url)
+    filename = f"profile_{user_id}.jpg"
+    with open(f"static/profiles/{filename}", 'wb') as f:
+        f.write(response.content)
+    return f"/static/profiles/{filename}"</code></pre>
+    </div>
+
+    <script>
+        let logCount = 0;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('consoleLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#333';
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            logCount++;
+            
+            if (logCount > 50) {
+                logDiv.removeChild(logDiv.firstChild);
+                logCount--;
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('consoleLog').innerHTML = '';
+            logCount = 0;
+        }
+        
+        function updateStatus(img, status) {
+            const statusSpan = img.parentElement.querySelector('.status');
+            statusSpan.textContent = status === 'success' ? 'Loaded' : 'Failed';
+            statusSpan.className = `status ${status}`;
+            
+            log(`Image ${status}: ${img.src}`, status);
+        }
+        
+        function showFallback(img) {
+            const fallback = img.nextElementSibling;
+            if (fallback && fallback.classList.contains('fallback-avatar')) {
+                img.style.display = 'none';
+                fallback.style.display = 'flex';
+            }
+        }
+        
+        function testImage() {
+            const url = document.getElementById('imageUrl').value.trim();
+            if (!url) {
+                alert('กรุณาใส่ URL รูปภาพ');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = `
+                <div class="image-test">
+                    <img src="${url}" 
+                         class="test-image" 
+                         onload="updateStatus(this, 'success')"
+                         onerror="updateStatus(this, 'error'); showFallback(this)">
+                    <div class="fallback-avatar">👤</div>
+                    <div>
+                        <strong>Custom Test Image</strong><br>
+                        <small>${url}</small><br>
+                        <span class="status loading">Loading...</span>
+                    </div>
+                </div>
+            `;
+            
+            log(`Testing image: ${url}`, 'info');
+        }
+        
+        // Override console methods to capture logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            log(args.join(' '), 'info');
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            log(args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            log(args.join(' '), 'warn');
+            originalWarn.apply(console, args);
+        };
+        
+        // Log page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Debug page loaded', 'success');
+            log('Testing common Google image patterns...', 'info');
+        });
+    </script>
+</body>
+</html>

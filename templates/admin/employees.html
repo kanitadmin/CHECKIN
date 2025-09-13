@@ -356,9 +356,15 @@
         <div class="employee-card {% if employee.is_admin %}admin{% endif %}">
             <div class="employee-header">
                 {% if employee.picture_url %}
-                <img src="{{ employee.picture_url }}" alt="Profile" class="employee-avatar">
+                <img src="{{ url_for('proxy_image', url=employee.picture_url) }}" 
+                     alt="Profile" 
+                     class="employee-avatar"
+                     onerror="this.src='{{ url_for('static', filename='default-avatar.svg') }}';"
+                     loading="lazy">
                 {% else %}
-                <div class="employee-avatar-placeholder">
+                <img src="{{ url_for('static', filename='default-avatar.svg') }}" 
+                     alt="Profile" 
+                     class="employee-avatar">
                     <i class="fas fa-user"></i>
                 </div>
                 {% endif %}

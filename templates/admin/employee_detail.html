@@ -326,9 +326,15 @@
     <div class="page-header">
         <div class="header-content">
             {% if employee.picture_url %}
-            <img src="{{ employee.picture_url }}" alt="Profile" class="employee-avatar-large">
+            <img src="{{ url_for('proxy_image', url=employee.picture_url) }}" 
+                 alt="Profile" 
+                 class="employee-avatar-large"
+                 onerror="this.src='{{ url_for('static', filename='default-avatar.svg') }}';"
+                 loading="lazy">
             {% else %}
-            <div class="employee-avatar-placeholder-large">
+            <img src="{{ url_for('static', filename='default-avatar.svg') }}" 
+                 alt="Profile" 
+                 class="employee-avatar-large">
                 <i class="fas fa-user"></i>
             </div>
             {% endif %}
