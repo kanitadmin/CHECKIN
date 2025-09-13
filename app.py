@@ -10,6 +10,7 @@ import requests
 import time
 from database import initialize_database, verify_database_schema, DatabaseConnectionError, DatabaseQueryError
 from models import EmployeeRepository, AttendanceRepository
+from location_models import LocationRepository, LocationValidator
 from security_utils import SecurityValidator, sanitize_user_input
 
 # Load environment variables
@@ -123,6 +124,7 @@ except Exception as e:
 # Initialize repositories
 employee_repo = EmployeeRepository()
 attendance_repo = AttendanceRepository()
+location_repo = LocationRepository()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -495,6 +497,11 @@ def check_in():
     employee_id = current_user.id
     max_retries = 3
     
+    # Get location data from request
+    data = request.get_json() or {}
+    user_latitude = data.get('latitude')
+    user_longitude = data.get('longitude')
+    
     for attempt in range(max_retries):
         try:
             # Check current attendance status
@@ -512,8 +519,49 @@ def check_in():
                         'error': 'You have already completed attendance for today.'
                     }, 400
             
-            # Create check-in record
-            attendance_record = attendance_repo.create_checkin(employee_id)
+            # Validate location if coordinates provided
+            location_verified = False
+            matched_location = None
+            
+            if user_latitude is not None and user_longitude is not None:
+                try:
+                    # Get active location settings
+                    allowed_locations = location_repo.get_active_locations()
+                    
+                    if allowed_locations:
+                        is_valid, matched_location, distance = LocationValidator.validate_user_location(
+                            user_latitude, user_longitude, allowed_locations
+                        )
+                        
+                        if not is_valid:
+                            closest_location_name = matched_location.name if matched_location else "ไม่ทราบ"
+                            return {
+                                'success': False,
+                                'error': f'คุณอยู่นอกพื้นที่ที่อนุญาต ตำแหน่งที่ใกล้ที่สุด: {closest_location_name} ({distance:.0f} เมตร)',
+                                'location_error': True,
+                                'distance': distance,
+                                'closest_location': closest_location_name
+                            }, 400
+                        
+                        location_verified = True
+                        logger.info(f"Location verified for employee {employee_id}: {matched_location.name} ({distance:.0f}m)")
+                    else:
+                        logger.warning("No active locations configured, allowing check-in without location verification")
+                        
+                except Exception as e:
+                    logger.error(f"Location validation error: {e}")
+                    # Continue without location verification if there's an error
+                    pass
+            else:
+                logger.warning(f"Check-in without location data for employee {employee_id}")
+            
+            # Create check-in record with location data
+            attendance_record = attendance_repo.create_checkin(
+                employee_id, 
+                latitude=user_latitude, 
+                longitude=user_longitude, 
+                location_verified=location_verified
+            )
             
             # Format check-in time for response
             check_in_time = attendance_record['check_in_time']
@@ -1114,10 +1162,16 @@ def admin_dashboard():
         # Get all employees
         all_employees = employee_repo.get_all_employees()
         
+        # Get location statistics
+        all_locations = location_repo.get_all_locations()
+        active_locations = location_repo.get_active_locations()
+        
         return render_template('admin/dashboard.html',
                              stats=stats,
                              recent_records=recent_records,
-                             employees=all_employees)
+                             employees=all_employees,
+                             all_locations=all_locations,
+                             active_locations=active_locations)
         
     except Exception as e:
         logger.error(f"Error loading admin dashboard: {e}")
@@ -1196,6 +1250,201 @@ def admin_update_employee_role(employee_id):
     except Exception as e:
         logger.error(f"Error updating employee role: {e}")
         return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการอัปเดตบทบาท'})
+
+
+@app.route('/admin/locations')
+@login_required
+@admin_required
+def admin_locations():
+    """Admin location management page"""
+    try:
+        locations = location_repo.get_all_locations()
+        return render_template('admin/locations.html', locations=locations)
+    except Exception as e:
+        logger.error(f"Error loading locations page: {e}")
+        flash('เกิดข้อผิดพลาดในการโหลดข้อมูลตำแหน่ง', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/locations', methods=['POST'])
+@login_required
+@admin_required
+def admin_create_location():
+    """Create new location setting"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'ไม่พบข้อมูลที่ส่งมา'})
+        
+        # Validate required fields
+        required_fields = ['name', 'latitude', 'longitude', 'radius_meters']
+        for field in required_fields:
+            if field not in data or data[field] is None or data[field] == '':
+                return jsonify({'success': False, 'error': f'กรุณากรอก{field}'})
+        
+        # Convert and validate numeric fields
+        try:
+            latitude = float(data['latitude'])
+            longitude = float(data['longitude'])
+            radius_meters = int(data['radius_meters'])
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'error': 'ข้อมูลพิกัดหรือรัศมีไม่ถูกต้อง'})
+        
+        # Create location
+        location = location_repo.create_location(
+            name=data['name'],
+            description=data.get('description'),
+            latitude=latitude,
+            longitude=longitude,
+            radius_meters=radius_meters
+        )
+        
+        logger.info(f"Admin {current_user.email} created location: {location.name}")
+        return jsonify({
+            'success': True, 
+            'message': 'เพิ่มตำแหน่งใหม่สำเร็จ',
+            'location': location.to_dict()
+        })
+        
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)})
+    except Exception as e:
+        logger.error(f"Error creating location: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการเพิ่มตำแหน่ง'})
+
+
+@app.route('/admin/locations/<int:location_id>')
+@login_required
+@admin_required
+def admin_get_location(location_id):
+    """Get location details"""
+    try:
+        location = location_repo.get_location_by_id(location_id)
+        
+        if not location:
+            return jsonify({'success': False, 'error': 'ไม่พบตำแหน่งที่ระบุ'})
+        
+        return jsonify({
+            'success': True,
+            'location': location.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting location {location_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการโหลดข้อมูล'})
+
+
+@app.route('/admin/locations/<int:location_id>', methods=['PUT'])
+@login_required
+@admin_required
+def admin_update_location(location_id):
+    """Update location setting"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'ไม่พบข้อมูลที่ส่งมา'})
+        
+        # Convert numeric fields if provided
+        update_data = {}
+        
+        if 'name' in data:
+            update_data['name'] = data['name']
+        
+        if 'description' in data:
+            update_data['description'] = data['description']
+        
+        if 'latitude' in data:
+            try:
+                update_data['latitude'] = float(data['latitude'])
+            except (ValueError, TypeError):
+                return jsonify({'success': False, 'error': 'ข้อมูลละติจูดไม่ถูกต้อง'})
+        
+        if 'longitude' in data:
+            try:
+                update_data['longitude'] = float(data['longitude'])
+            except (ValueError, TypeError):
+                return jsonify({'success': False, 'error': 'ข้อมูลลองจิจูดไม่ถูกต้อง'})
+        
+        if 'radius_meters' in data:
+            try:
+                update_data['radius_meters'] = int(data['radius_meters'])
+            except (ValueError, TypeError):
+                return jsonify({'success': False, 'error': 'ข้อมูลรัศมีไม่ถูกต้อง'})
+        
+        # Update location
+        location = location_repo.update_location(location_id, **update_data)
+        
+        if not location:
+            return jsonify({'success': False, 'error': 'ไม่พบตำแหน่งที่ระบุ'})
+        
+        logger.info(f"Admin {current_user.email} updated location: {location.name}")
+        return jsonify({
+            'success': True,
+            'message': 'อัปเดตตำแหน่งสำเร็จ',
+            'location': location.to_dict()
+        })
+        
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)})
+    except Exception as e:
+        logger.error(f"Error updating location {location_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการอัปเดตตำแหน่ง'})
+
+
+@app.route('/admin/locations/<int:location_id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def admin_toggle_location(location_id):
+    """Toggle location active status"""
+    try:
+        location = location_repo.get_location_by_id(location_id)
+        
+        if not location:
+            return jsonify({'success': False, 'error': 'ไม่พบตำแหน่งที่ระบุ'})
+        
+        # Toggle status
+        new_status = not location.is_active
+        updated_location = location_repo.update_location(location_id, is_active=new_status)
+        
+        action = 'เปิดใช้งาน' if new_status else 'ปิดใช้งาน'
+        logger.info(f"Admin {current_user.email} {action} location: {location.name}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'{action}ตำแหน่งสำเร็จ',
+            'location': updated_location.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error toggling location {location_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะ'})
+
+
+@app.route('/admin/locations/<int:location_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def admin_delete_location(location_id):
+    """Delete location setting"""
+    try:
+        location = location_repo.get_location_by_id(location_id)
+        
+        if not location:
+            return jsonify({'success': False, 'error': 'ไม่พบตำแหน่งที่ระบุ'})
+        
+        # Soft delete (set is_active = False)
+        location_repo.delete_location(location_id)
+        
+        logger.info(f"Admin {current_user.email} deleted location: {location.name}")
+        return jsonify({
+            'success': True,
+            'message': 'ลบตำแหน่งสำเร็จ'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error deleting location {location_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการลบตำแหน่ง'})
 
 
 if __name__ == '__main__':

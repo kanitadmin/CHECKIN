@@ -6,7 +6,11 @@ import os
 import logging
 from contextlib import contextmanager
 from typing import Optional, Dict, Any, List, Tuple
+from dotenv import load_dotenv
 from security_utils import validate_database_query, SecurityValidator
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -205,11 +209,31 @@ CREATE TABLE IF NOT EXISTS attendances (
     check_in_time DATETIME NOT NULL,
     check_out_time DATETIME NULL,
     work_date DATE NOT NULL,
+    latitude DECIMAL(10, 8) NULL,
+    longitude DECIMAL(11, 8) NULL,
+    location_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
     UNIQUE KEY unique_daily_checkin (employee_id, work_date),
     INDEX idx_employee_date (employee_id, work_date),
-    INDEX idx_work_date (work_date)
+    INDEX idx_work_date (work_date),
+    INDEX idx_location (latitude, longitude)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+"""
+
+LOCATION_SETTINGS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS location_settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    radius_meters INT NOT NULL DEFAULT 100,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_active (is_active),
+    INDEX idx_location (latitude, longitude)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 """
 
@@ -233,6 +257,11 @@ def initialize_database() -> None:
         logger.info("Creating attendances table...")
         db_manager.execute_query(ATTENDANCES_TABLE_SQL)
         logger.info("Attendances table created successfully")
+        
+        # Create location settings table
+        logger.info("Creating location settings table...")
+        db_manager.execute_query(LOCATION_SETTINGS_TABLE_SQL)
+        logger.info("Location settings table created successfully")
         
         # Run migrations for existing databases
         migrate_database()

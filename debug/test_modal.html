@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .close:hover {
+            color: #374151;
+            background: #f3f4f6;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background: white;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+        
+        .btn-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+        
+        .btn-info:hover {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Modal Functionality</h1>
+    
+    <div>
+        <h2>Modal Test</h2>
+        <p>ทดสอบการทำงานของ Modal popup</p>
+        
+        <button class="test-button" onclick="openAddLocationModal()">
+            ➕ เพิ่มตำแหน่งใหม่
+        </button>
+        
+        <button class="test-button" onclick="testJavaScript()">
+            🔍 Test JavaScript
+        </button>
+        
+        <button class="test-button" onclick="getCurrentLocation()">
+            📍 ใช้ตำแหน่งปัจจุบัน
+        </button>
+        
+        <div id="status"></div>
+    </div>
+
+    <!-- Add/Edit Location Modal -->
+    <div id="locationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">เพิ่มตำแหน่งใหม่</h2>
+                <button class="close" onclick="closeLocationModal()">&times;</button>
+            </div>
+            <form id="locationForm">
+                <input type="hidden" id="locationId" name="locationId">
+                
+                <div class="form-group">
+                    <label for="locationName">ชื่อตำแหน่ง *</label>
+                    <input type="text" id="locationName" name="name" required 
+                           placeholder="เช่น สำนักงานใหญ่, สาขา A">
+                </div>
+                
+                <div class="form-group">
+                    <label for="locationDescription">คำอธิบาย</label>
+                    <textarea id="locationDescription" name="description" rows="3" 
+                              placeholder="รายละเอียดเพิ่มเติมเกี่ยวกับตำแหน่งนี้"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="latitude">ละติจูด *</label>
+                        <input type="number" id="latitude" name="latitude" step="0.000001" required 
+                               placeholder="13.736717">
+                    </div>
+                    <div class="form-group">
+                        <label for="longitude">ลองจิจูด *</label>
+                        <input type="number" id="longitude" name="longitude" step="0.000001" required 
+                               placeholder="100.523186">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="radius">รัศมีที่อนุญาต (เมตร) *</label>
+                    <input type="number" id="radius" name="radius_meters" min="1" max="10000" required 
+                           value="100" placeholder="100">
+                    <small>ระยะทางที่อนุญาตให้ลงเวลาจากจุดที่กำหนด (1-10,000 เมตร)</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeLocationModal()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">
+                        💾 บันทึก
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="getCurrentLocation()">
+                        📍 ใช้ตำแหน่งปัจจุบัน
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let isEditing = false;
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+        
+        // Modal functions
+        function openAddLocationModal() {
+            console.log('🔍 openAddLocationModal called');
+            
+            try {
+                const modal = document.getElementById('locationModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const locationForm = document.getElementById('locationForm');
+                const locationId = document.getElementById('locationId');
+                
+                if (!modal) {
+                    throw new Error('Modal element not found');
+                }
+                
+                if (!modalTitle) {
+                    throw new Error('Modal title element not found');
+                }
+                
+                if (!locationForm) {
+                    throw new Error('Location form element not found');
+                }
+                
+                if (!locationId) {
+                    throw new Error('Location ID input not found');
+                }
+                
+                modalTitle.textContent = 'เพิ่มตำแหน่งใหม่';
+                locationForm.reset();
+                locationId.value = '';
+                isEditing = false;
+                modal.style.display = 'block';
+                
+                console.log('✅ Modal opened successfully');
+                showStatus('Modal เปิดสำเร็จ!', 'success');
+                
+            } catch (error) {
+                console.error('❌ Error opening modal:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function closeLocationModal() {
+            console.log('🔍 closeLocationModal called');
+            
+            try {
+                const modal = document.getElementById('locationModal');
+                
+                if (!modal) {
+                    throw new Error('Modal element not found');
+                }
+                
+                modal.style.display = 'none';
+                
+                console.log('✅ Modal closed successfully');
+                showStatus('Modal ปิดสำเร็จ!', 'success');
+                
+            } catch (error) {
+                console.error('❌ Error closing modal:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testJavaScript() {
+            console.log('🔍 Testing JavaScript functions...');
+            
+            const tests = [
+                {
+                    name: 'openAddLocationModal function',
+                    test: () => typeof openAddLocationModal === 'function'
+                },
+                {
+                    name: 'closeLocationModal function',
+                    test: () => typeof closeLocationModal === 'function'
+                },
+                {
+                    name: 'locationModal element',
+                    test: () => document.getElementById('locationModal') !== null
+                },
+                {
+                    name: 'modalTitle element',
+                    test: () => document.getElementById('modalTitle') !== null
+                },
+                {
+                    name: 'locationForm element',
+                    test: () => document.getElementById('locationForm') !== null
+                }
+            ];
+            
+            let results = [];
+            
+            tests.forEach(test => {
+                try {
+                    const result = test.test();
+                    results.push(`✅ ${test.name}: ${result ? 'PASS' : 'FAIL'}`);
+                    console.log(`✅ ${test.name}: ${result ? 'PASS' : 'FAIL'}`);
+                } catch (error) {
+                    results.push(`❌ ${test.name}: ERROR - ${error.message}`);
+                    console.error(`❌ ${test.name}: ERROR - ${error.message}`);
+                }
+            });
+            
+            showStatus(`JavaScript Test Results:\n${results.join('\n')}`, 'info');
+        }
+        
+        function getCurrentLocation() {
+            console.log('🔍 Getting current location...');
+            showStatus('กำลังค้นหาตำแหน่งปัจจุบัน...', 'info');
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude.toFixed(6);
+                        const lon = position.coords.longitude.toFixed(6);
+                        
+                        document.getElementById('latitude').value = lat;
+                        document.getElementById('longitude').value = lon;
+                        
+                        console.log(`✅ Location obtained: ${lat}, ${lon}`);
+                        showStatus(`ได้รับตำแหน่งปัจจุบันแล้ว: ${lat}, ${lon}`, 'success');
+                    },
+                    function(error) {
+                        let errorMessage = 'ไม่สามารถรับตำแหน่งปัจจุบันได้';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'ผู้ใช้ปฏิเสธการขอสิทธิ์เข้าถึงตำแหน่ง';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'ข้อมูลตำแหน่งไม่พร้อมใช้งาน';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'หมดเวลาในการค้นหาตำแหน่ง';
+                                break;
+                        }
+                        console.error('❌ Geolocation error:', errorMessage);
+                        showStatus(errorMessage, 'error');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            } else {
+                const errorMessage = 'เบราว์เซอร์ไม่รองรับการค้นหาตำแหน่ง';
+                console.error('❌ Geolocation not supported');
+                showStatus(errorMessage, 'error');
+            }
+        }
+        
+        // Form submission
+        document.getElementById('locationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('📝 Form submitted');
+            showStatus('Form submitted (test mode)', 'info');
+        });
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('locationModal');
+            if (event.target == modal) {
+                closeLocationModal();
+            }
+        }
+        
+        // Auto-run tests when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Test page loaded successfully');
+            showStatus('Test page พร้อมใช้งาน', 'success');
+        });
+    </script>
+</body>
+</html>

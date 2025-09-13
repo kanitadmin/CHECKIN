@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Admin JavaScript</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Admin JavaScript</h1>
+    
+    <div class="debug-section">
+        <h2>JavaScript Function Tests</h2>
+        <p>ทดสอบ JavaScript functions ที่ใช้ในหน้า Admin</p>
+        
+        <button class="test-button" onclick="testModalFunctions()">Test Modal Functions</button>
+        <button class="test-button" onclick="testDOMElements()">Test DOM Elements</button>
+        <button class="test-button" onclick="testEventListeners()">Test Event Listeners</button>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+        
+        <div id="testLog" class="log"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Modal Test</h2>
+        <p>ทดสอบ Modal popup</p>
+        
+        <button class="test-button" onclick="openTestModal()">เพิ่มตำแหน่งใหม่ (Test)</button>
+        
+        <!-- Test Modal -->
+        <div id="testModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeTestModal()">&times;</span>
+                <h2>Test Modal</h2>
+                <p>Modal ทำงานได้ปกติ!</p>
+                <button class="test-button" onclick="closeTestModal()">ปิด</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Browser Console Check</h2>
+        <p>เปิด Developer Tools (F12) และตรวจสอบ Console tab สำหรับ JavaScript errors</p>
+        
+        <h3>Common Issues:</h3>
+        <ul>
+            <li><strong>ReferenceError:</strong> function is not defined</li>
+            <li><strong>TypeError:</strong> Cannot read property of null</li>
+            <li><strong>SyntaxError:</strong> Unexpected token</li>
+            <li><strong>Network Error:</strong> Failed to load resources</li>
+        </ul>
+        
+        <h3>Debug Steps:</h3>
+        <ol>
+            <li>เปิด Developer Tools (F12)</li>
+            <li>ไปที่ Console tab</li>
+            <li>รีเฟรชหน้า Admin Locations</li>
+            <li>คลิกปุ่ม "เพิ่มตำแหน่งใหม่"</li>
+            <li>ดู error messages ใน Console</li>
+        </ol>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Manual Test Instructions</h2>
+        <p>วิธีทดสอบในหน้า Admin จริง:</p>
+        
+        <h3>1. ตรวจสอบ JavaScript Loading</h3>
+        <pre>
+// ใน Browser Console พิมพ์:
+typeof openAddLocationModal
+// ควรได้: "function"
+
+// ถ้าได้ "undefined" แสดงว่า JavaScript ไม่โหลด
+        </pre>
+        
+        <h3>2. ตรวจสอบ DOM Elements</h3>
+        <pre>
+// ใน Browser Console พิมพ์:
+document.getElementById('locationModal')
+// ควรได้: &lt;div id="locationModal"...&gt;
+
+// ถ้าได้ null แสดงว่า HTML ไม่มี element นี้
+        </pre>
+        
+        <h3>3. ทดสอบ Function โดยตรง</h3>
+        <pre>
+// ใน Browser Console พิมพ์:
+openAddLocationModal()
+// ควรเปิด modal ขึ้นมา
+        </pre>
+        
+        <h3>4. ตรวจสอบ CSS</h3>
+        <pre>
+// ใน Browser Console พิมพ์:
+const modal = document.getElementById('locationModal');
+console.log(modal.style.display);
+// ควรได้ "block" เมื่อเปิด modal
+        </pre>
+    </div>
+
+    <script>
+        let logCount = 0;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] <span class="${type}">${type.toUpperCase()}</span>: ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            logCount++;
+            
+            if (logCount > 50) {
+                logDiv.removeChild(logDiv.firstChild);
+                logCount--;
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+            logCount = 0;
+        }
+        
+        function testModalFunctions() {
+            log('Testing modal functions...', 'info');
+            
+            // Test if functions exist
+            if (typeof openTestModal === 'function') {
+                log('✅ openTestModal function exists', 'success');
+            } else {
+                log('❌ openTestModal function not found', 'error');
+            }
+            
+            if (typeof closeTestModal === 'function') {
+                log('✅ closeTestModal function exists', 'success');
+            } else {
+                log('❌ closeTestModal function not found', 'error');
+            }
+        }
+        
+        function testDOMElements() {
+            log('Testing DOM elements...', 'info');
+            
+            const modal = document.getElementById('testModal');
+            if (modal) {
+                log('✅ Test modal element found', 'success');
+                log(`Modal display style: ${modal.style.display}`, 'info');
+            } else {
+                log('❌ Test modal element not found', 'error');
+            }
+        }
+        
+        function testEventListeners() {
+            log('Testing event listeners...', 'info');
+            
+            const buttons = document.querySelectorAll('button[onclick]');
+            log(`Found ${buttons.length} buttons with onclick handlers`, 'info');
+            
+            buttons.forEach((button, index) => {
+                const onclick = button.getAttribute('onclick');
+                log(`Button ${index + 1}: ${onclick}`, 'info');
+            });
+        }
+        
+        function openTestModal() {
+            log('Opening test modal...', 'info');
+            const modal = document.getElementById('testModal');
+            if (modal) {
+                modal.style.display = 'block';
+                log('✅ Test modal opened successfully', 'success');
+            } else {
+                log('❌ Failed to open test modal', 'error');
+            }
+        }
+        
+        function closeTestModal() {
+            log('Closing test modal...', 'info');
+            const modal = document.getElementById('testModal');
+            if (modal) {
+                modal.style.display = 'none';
+                log('✅ Test modal closed successfully', 'success');
+            } else {
+                log('❌ Failed to close test modal', 'error');
+            }
+        }
+        
+        // Auto-run tests when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Debug page loaded successfully', 'success');
+            log('Ready to test JavaScript functions', 'info');
+        });
+        
+        // Override console methods to capture logs
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.error = function(...args) {
+            log(args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            log(args.join(' '), 'warning');
+            originalWarn.apply(console, args);
+        };
+    </script>
+</body>
+</html>

@@ -434,12 +434,16 @@ class AttendanceRepository:
             logger.error(f"Failed to get today's attendance for employee {employee_id}: {e}")
             raise
     
-    def create_checkin(self, employee_id: int) -> Dict[str, Any]:
+    def create_checkin(self, employee_id: int, latitude: float = None, longitude: float = None, 
+                      location_verified: bool = False) -> Dict[str, Any]:
         """
-        Insert new attendance record with check_in_time and work_date
+        Insert new attendance record with check_in_time, work_date, and location data
         
         Args:
             employee_id: Database ID of the employee
+            latitude: User's latitude coordinate
+            longitude: User's longitude coordinate
+            location_verified: Whether the location was verified against allowed locations
             
         Returns:
             Dictionary containing the created attendance record
@@ -453,20 +457,20 @@ class AttendanceRepository:
             if existing_attendance:
                 raise DatabaseQueryError(f"Employee {employee_id} has already checked in today")
             
-            # Insert new check-in record
+            # Insert new check-in record with location data
             query = """
-                INSERT INTO attendances (employee_id, check_in_time, work_date)
-                VALUES (%s, NOW(), CURDATE())
+                INSERT INTO attendances (employee_id, check_in_time, work_date, latitude, longitude, location_verified)
+                VALUES (%s, NOW(), CURDATE(), %s, %s, %s)
             """
             
-            self.db_manager.execute_query(query, (employee_id,))
+            self.db_manager.execute_query(query, (employee_id, latitude, longitude, location_verified))
             
             # Retrieve the newly created attendance record
             created_attendance = self.get_today_attendance(employee_id)
             if not created_attendance:
                 raise DatabaseQueryError("Failed to retrieve newly created attendance record")
             
-            logger.info(f"Successfully created check-in for employee {employee_id}")
+            logger.info(f"Successfully created check-in for employee {employee_id} with location verification: {location_verified}")
             return created_attendance
             
         except DatabaseQueryError as e:

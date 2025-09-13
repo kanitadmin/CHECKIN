@@ -654,16 +654,68 @@ async function performCheckIn() {
         // Show loading state with modern spinner
         button.innerHTML = `
             <div class="loading-spinner"></div>
-            กำลังลงเวลาเข้างาน...
+            กำลังขอตำแหน่งปัจจุบัน...
         `;
         button.classList.add('loading');
         button.disabled = true;
+        
+        // Get user location
+        let locationData = {};
+        
+        if (navigator.geolocation) {
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    });
+                });
+                
+                locationData = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                
+                console.log('Location obtained:', locationData);
+                
+            } catch (locationError) {
+                console.warn('Location error:', locationError);
+                
+                // Ask user if they want to continue without location
+                const continueWithoutLocation = confirm(
+                    'ไม่สามารถรับตำแหน่งปัจจุบันได้\n\n' +
+                    'สาเหตุอาจเป็น:\n' +
+                    '- ไม่อนุญาตให้เข้าถึงตำแหน่ง\n' +
+                    '- GPS ไม่พร้อมใช้งาน\n' +
+                    '- การเชื่อมต่อไม่เสถียร\n\n' +
+                    'คุณต้องการลงเวลาโดยไม่มีข้อมูลตำแหน่งหรือไม่?'
+                );
+                
+                if (!continueWithoutLocation) {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                    return;
+                }
+            }
+        } else {
+            console.warn('Geolocation not supported');
+            showNotification('เบราว์เซอร์ไม่รองรับการค้นหาตำแหน่ง', 'warning');
+        }
+        
+        // Update button text
+        button.innerHTML = `
+            <div class="loading-spinner"></div>
+            กำลังลงเวลาเข้างาน...
+        `;
         
         const response = await fetch('/check-in', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify(locationData)
         });
         
         const data = await response.json();

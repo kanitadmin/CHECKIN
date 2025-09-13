@@ -1,8 +1,8 @@
-{% extends "layout.html" %}
+{% extends "admin/admin_layout.html" %}
 
 {% block title %}จัดการพนักงาน - ระบบลงเวลาทำงาน{% endblock %}
 
-{% block extra_css %}
+{% block admin_extra_css %}
 <style>
     .employees-page {
         max-width: 1200px;
@@ -330,7 +330,7 @@
 </style>
 {% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <div class="employees-page">
     <!-- Page Header -->
     <div class="page-header">
@@ -446,7 +446,7 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block admin_extra_js %}
 <script>
 // Get CSRF token
 function getCSRFToken() {
