@@ -10,11 +10,8 @@
         border: 1px solid var(--gray-200);
         margin-bottom: 1rem;
         transition: all 0.2s ease;
-    }
-    
-    .department-card:hover {
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
     }
     
     .department-card::before {
@@ -34,6 +31,24 @@
         margin-bottom: 0.75rem;
         padding-bottom: 0.75rem;
         border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .department-title-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .department-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem;
     }
     
     .department-title {
@@ -369,6 +384,14 @@
             justify-content: flex-end;
         }
     }
+    
+    .admin-card-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--gray-200);
+        text-align: center;
+        background: var(--gray-50);
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
 </style>
 {% endblock %}
 
@@ -377,13 +400,9 @@
     <div class="admin-card">
         <div class="admin-card-header">
             <div class="admin-card-icon info">
-                <i class="fas fa-list"></i>
+                <i class="fas fa-building"></i>
             </div>
-            <h2 class="admin-card-title">รายการฝ่าย</h2>
-            <button id="addDepartmentBtn" class="btn btn-primary">
-                <i class="fas fa-plus"></i>
-                เพิ่มฝ่ายใหม่
-            </button>
+            <h2 class="admin-card-title"><i class="fas fa-list"></i> รายการฝ่าย</h2>
         </div>
         
         <div id="departmentsContainer">
@@ -391,7 +410,12 @@
                 {% for department in departments %}
                 <div class="department-card" data-department-id="{{ department.id }}">
                     <div class="department-header">
-                        <h3 class="department-title">{{ department.name }}</h3>
+                        <div class="department-title-container">
+                            <div class="department-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <h3 class="department-title">{{ department.name }}</h3>
+                        </div>
                         <div class="department-actions">
                             <button class="btn btn-sm btn-info edit-department-btn" data-department-id="{{ department.id }}">
                                 <i class="fas fa-edit"></i>
@@ -430,6 +454,13 @@
                     <p>คลิกที่ปุ่ม "เพิ่มฝ่ายใหม่" เพื่อสร้างฝ่ายแรกของคุณ</p>
                 </div>
             {% endif %}
+        </div>
+        
+        <div class="admin-card-footer">
+            <button id="addDepartmentBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                เพิ่มฝ่ายใหม่
+            </button>
         </div>
     </div>
 </div>
