@@ -4,51 +4,208 @@
 
 {% block admin_extra_css %}
 <style>
-    .admin-dashboard {
+    /* Stats Grid - เฉพาะสำหรับแดชบอร์ด */
+    .stats-grid {
         display: grid;
-        gap: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
     
-    .admin-header {
-        background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-        color: white;
+    .stat-card {
+        background: white;
         padding: 2rem;
         border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
         text-align: center;
         position: relative;
         overflow: hidden;
     }
     
-    .admin-header::before {
+    .stat-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+        height: 4px;
     }
     
-    .admin-header-content {
-        position: relative;
-        z-index: 1;
+    .stat-card.employees::before {
+        background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
     }
     
-    .admin-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
+    .stat-card.checkins::before {
+        background: linear-gradient(90deg, var(--success-500), var(--success-600));
+    }
+    
+    .stat-card.completed::before {
+        background: linear-gradient(90deg, var(--warning-500), var(--warning-600));
+    }
+    
+    .stat-card.weekly::before {
+        background: linear-gradient(90deg, var(--error-500), var(--error-600));
+    }
+    
+    .stat-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
+        font-size: 1.5rem;
+        color: white;
     }
     
-    .admin-subtitle {
-        font-size: 1.1rem;
-        opacity: 0.9;
+    .stat-card.employees .stat-icon {
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    }
+    
+    .stat-card.checkins .stat-icon {
+        background: linear-gradient(135deg, var(--success-500), var(--success-600));
+    }
+    
+    .stat-card.completed .stat-icon {
+        background: linear-gradient(135deg, var(--warning-500), var(--warning-600));
+    }
+    
+    .stat-card.weekly .stat-icon {
+        background: linear-gradient(135deg, var(--error-500), var(--error-600));
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+    
+    /* Navigation Cards - เฉพาะสำหรับแดชบอร์ด */
+    .nav-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .nav-card {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .nav-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .nav-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+    }
+    
+    .nav-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+        margin-bottom: 1rem;
+    }
+    
+    .nav-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+    
+    .nav-description {
+        color: var(--gray-600);
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+    
+    /* Employee Info Styles */
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .employee-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .employee-avatar-placeholder {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--gray-300);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem;
+    }
+    
+    .employee-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .employee-name {
+        font-weight: 500;
+        color: var(--gray-900);
+    }
+    
+    .employee-email {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-grid,
+        .nav-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .employee-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
     }
     
     /* Stats Grid */
@@ -199,101 +356,7 @@
         font-size: 0.95rem;
         line-height: 1.5;
     }
-    
-    /* Recent Records Section */
-    .recent-section {
-        background: white;
-        border-radius: var(--radius-xl);
-        padding: 2rem;
-        box-shadow: var(--shadow-lg);
-        border: 1px solid var(--gray-200);
-    }
-    
-    .section-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid var(--gray-100);
-    }
-    
-    .section-icon {
-        width: 48px;
-        height: 48px;
-        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
-        border-radius: var(--radius-lg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.25rem;
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--gray-900);
-        margin: 0;
-    }
-    
-    /* Table Styles */
-    .admin-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        box-shadow: var(--shadow-sm);
-    }
-    
-    .admin-table th {
-        background: var(--gray-50);
-        padding: 1rem 1.25rem;
-        text-align: left;
-        font-weight: 600;
-        color: var(--gray-700);
-        font-size: 0.875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border-bottom: 1px solid var(--gray-200);
-    }
-    
-    .admin-table td {
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid var(--gray-100);
-        color: var(--gray-700);
-    }
-    
-    .admin-table tr:hover {
-        background-color: var(--gray-50);
-    }
-    
-    .admin-table tr:last-child td {
-        border-bottom: none;
-    }
-    
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.375rem 0.75rem;
-        border-radius: var(--radius-md);
-        font-size: 0.875rem;
-        font-weight: 500;
-    }
-    
-    .status-complete {
-        background: var(--success-50);
-        color: var(--success-700);
-        border: 1px solid var(--success-200);
-    }
-    
-    .status-in-progress {
-        background: var(--warning-50);
-        color: var(--warning-700);
-        border: 1px solid var(--warning-200);
-    }
+
     
     .employee-info {
         display: flex;
@@ -334,47 +397,20 @@
         font-size: 0.875rem;
         color: var(--gray-500);
     }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .admin-dashboard {
-            gap: 1.5rem;
-        }
-        
-        .admin-title {
-            font-size: 2rem;
-        }
-        
-        .stats-grid,
-        .nav-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .admin-table th,
-        .admin-table td {
-            padding: 0.75rem 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .employee-info {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-        }
-    }
+
 </style>
 {% endblock %}
 
 {% block admin_content %}
-<div class="admin-dashboard">
+<div class="admin-page-container">
     <!-- Admin Header -->
-    <div class="admin-header">
-        <div class="admin-header-content">
-            <h1 class="admin-title">
+    <div class="admin-page-header">
+        <div class="admin-page-header-content">
+            <h1 class="admin-page-title">
                 <i class="fas fa-user-shield"></i>
                 แดชบอร์ดผู้ดูแลระบบ
             </h1>
-            <p class="admin-subtitle">จัดการระบบลงเวลาทำงานและดูสถิติโดยรวม</p>
+            <p class="admin-page-subtitle">จัดการระบบลงเวลาทำงานและดูสถิติโดยรวม</p>
         </div>
     </div>
 
@@ -449,12 +485,12 @@
     </div>
 
     <!-- Recent Attendance Records -->
-    <div class="recent-section">
-        <div class="section-header">
-            <div class="section-icon">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-icon warning">
                 <i class="fas fa-history"></i>
             </div>
-            <h2 class="section-title">บันทึกการลงเวลาล่าสุด</h2>
+            <h2 class="admin-card-title">บันทึกการลงเวลาล่าสุด</h2>
         </div>
         
         {% if recent_records %}
@@ -501,12 +537,12 @@
                     </td>
                     <td>
                         {% if record.check_out_time %}
-                            <span class="status-badge status-complete">
+                            <span class="status-badge complete">
                                 <i class="fas fa-check"></i>
                                 สมบูรณ์
                             </span>
                         {% else %}
-                            <span class="status-badge status-in-progress">
+                            <span class="status-badge in-progress">
                                 <i class="fas fa-clock"></i>
                                 กำลังทำงาน
                             </span>
@@ -517,9 +553,11 @@
             </tbody>
         </table>
         {% else %}
-        <div style="text-align: center; padding: 3rem; color: var(--gray-500);">
-            <i class="fas fa-calendar-times" style="font-size: 3rem; margin-bottom: 1rem; color: var(--gray-300);"></i>
-            <p><strong>ไม่พบบันทึกการลงเวลา</strong></p>
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h3>ไม่พบบันทึกการลงเวลา</h3>
             <p>บันทึกการลงเวลาจะปรากฏที่นี่เมื่อพนักงานเริ่มใช้งานระบบ</p>
         </div>
         {% endif %}

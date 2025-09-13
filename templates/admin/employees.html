@@ -331,22 +331,16 @@
 {% endblock %}
 
 {% block admin_content %}
-<div class="employees-page">
+<div class="admin-page-container">
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-icon">
+    <div class="admin-page-header">
+        <div class="admin-page-header-content">
+            <h1 class="admin-page-title">
                 <i class="fas fa-users-cog"></i>
-            </div>
-            <div class="header-text">
-                <h1>จัดการพนักงาน</h1>
-                <p>ดูรายชื่อพนักงานและจัดการสิทธิ์การเข้าถึง</p>
-            </div>
+                จัดการพนักงาน
+            </h1>
+            <p class="admin-page-subtitle">ดูรายชื่อพนักงานและจัดการสิทธิ์การเข้าถึง</p>
         </div>
-        <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            กลับสู่แดชบอร์ด
-        </a>
     </div>
 
     <!-- Employees Grid -->
@@ -435,12 +429,14 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="no-employees">
-        <div class="no-employees-icon">
-            <i class="fas fa-users-slash"></i>
+    <div class="admin-card">
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-users-slash"></i>
+            </div>
+            <h3>ไม่พบข้อมูลพนักงาน</h3>
+            <p>ยังไม่มีพนักงานในระบบ พนักงานจะปรากฏที่นี่เมื่อเข้าสู่ระบบครั้งแรก</p>
         </div>
-        <h3>ไม่พบข้อมูลพนักงาน</h3>
-        <p>ยังไม่มีพนักงานในระบบ พนักงานจะปรากฏที่นี่เมื่อเข้าสู่ระบบครั้งแรก</p>
     </div>
     {% endif %}
 </div>
