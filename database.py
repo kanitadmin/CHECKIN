@@ -237,6 +237,19 @@ CREATE TABLE IF NOT EXISTS location_settings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 """
 
+WORK_TIME_SETTINGS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS work_time_settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    break_duration_minutes INT NOT NULL DEFAULT 60,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+"""
+
 
 def initialize_database() -> None:
     """
@@ -262,6 +275,11 @@ def initialize_database() -> None:
         logger.info("Creating location settings table...")
         db_manager.execute_query(LOCATION_SETTINGS_TABLE_SQL)
         logger.info("Location settings table created successfully")
+        
+        # Create work time settings table
+        logger.info("Creating work time settings table...")
+        db_manager.execute_query(WORK_TIME_SETTINGS_TABLE_SQL)
+        logger.info("Work time settings table created successfully")
         
         # Run migrations for existing databases
         migrate_database()

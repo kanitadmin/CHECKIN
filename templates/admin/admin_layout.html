@@ -407,6 +407,13 @@
                         <span class="nav-text">จัดการตำแหน่ง</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin_work_time') }}" 
+                       class="nav-link {% if request.endpoint == 'admin_work_time' %}active{% endif %}">
+                        <i class="nav-icon fas fa-clock"></i>
+                        <span class="nav-text">ตั้งค่าเวลาทำงาน</span>
+                    </a>
+                </li>
             </ul>
         </nav>
         

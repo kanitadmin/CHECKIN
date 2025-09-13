@@ -423,6 +423,22 @@
             <div class="nav-description">ดูรายชื่อพนักงาน แก้ไขข้อมูล และจัดการสิทธิ์การเข้าถึง</div>
         </a>
         
+        <a href="{{ url_for('admin_locations') }}" class="nav-card">
+            <div class="nav-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="nav-title">จัดการตำแหน่งที่ตั้ง</div>
+            <div class="nav-description">กำหนดตำแหน่งที่อนุญาตให้ลงเวลาทำงานได้</div>
+        </a>
+        
+        <a href="{{ url_for('admin_work_time') }}" class="nav-card">
+            <div class="nav-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="nav-title">ตั้งค่าเวลาทำงาน</div>
+            <div class="nav-description">กำหนดเวลาเข้างาน เวลาออกงาน และเวลาพัก</div>
+        </a>
+        
         <a href="{{ url_for('admin_dashboard') }}" class="nav-card">
             <div class="nav-icon">
                 <i class="fas fa-chart-bar"></i>

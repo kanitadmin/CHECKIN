@@ -125,6 +125,8 @@ except Exception as e:
 employee_repo = EmployeeRepository()
 attendance_repo = AttendanceRepository()
 location_repo = LocationRepository()
+from models import WorkTimeRepository
+work_time_repo = WorkTimeRepository()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -1445,6 +1447,207 @@ def admin_delete_location(location_id):
     except Exception as e:
         logger.error(f"Error deleting location {location_id}: {e}")
         return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการลบตำแหน่ง'})
+
+
+@app.route('/admin/work-time')
+@login_required
+@admin_required
+def admin_work_time():
+    """Admin work time settings page"""
+    try:
+        # Get current active settings
+        active_settings = work_time_repo.get_active_settings()
+        
+        # Get all settings history
+        all_settings = work_time_repo.get_all_settings()
+        
+        return render_template('admin/work_time.html', 
+                             active_settings=active_settings,
+                             all_settings=all_settings)
+    except Exception as e:
+        logger.error(f"Error loading work time settings page: {e}")
+        flash('เกิดข้อผิดพลาดในการโหลดข้อมูลการตั้งค่าเวลาทำงาน', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/work-time', methods=['POST'])
+@login_required
+@admin_required
+def admin_create_work_time():
+    """Create new work time settings"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'ไม่พบข้อมูลที่ส่งมา'})
+        
+        # Validate required fields
+        required_fields = ['start_time', 'end_time']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({'success': False, 'error': f'กรุณากรอก{field}'})
+        
+        start_time = data['start_time']
+        end_time = data['end_time']
+        break_duration = int(data.get('break_duration_minutes', 60))
+        
+        # Validate time format (HH:MM)
+        import re
+        time_pattern = r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+        
+        if not re.match(time_pattern, start_time):
+            return jsonify({'success': False, 'error': 'รูปแบบเวลาเริ่มงานไม่ถูกต้อง (ใช้ HH:MM)'})
+        
+        if not re.match(time_pattern, end_time):
+            return jsonify({'success': False, 'error': 'รูปแบบเวลาเลิกงานไม่ถูกต้อง (ใช้ HH:MM)'})
+        
+        # Validate break duration
+        if break_duration < 0 or break_duration > 480:  # Max 8 hours
+            return jsonify({'success': False, 'error': 'ระยะเวลาพักต้องอยู่ระหว่าง 0-480 นาที'})
+        
+        # Create work time settings
+        settings = work_time_repo.create_settings(
+            start_time=start_time,
+            end_time=end_time,
+            break_duration_minutes=break_duration
+        )
+        
+        logger.info(f"Admin {current_user.email} created work time settings: {start_time}-{end_time}")
+        return jsonify({
+            'success': True, 
+            'message': 'สร้างการตั้งค่าเวลาทำงานสำเร็จ',
+            'settings': settings.to_dict()
+        })
+        
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)})
+    except Exception as e:
+        logger.error(f"Error creating work time settings: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการสร้างการตั้งค่า'})
+
+
+@app.route('/admin/work-time/<int:settings_id>')
+@login_required
+@admin_required
+def admin_get_work_time(settings_id):
+    """Get work time settings details"""
+    try:
+        settings = work_time_repo.get_settings_by_id(settings_id)
+        
+        if not settings:
+            return jsonify({'success': False, 'error': 'ไม่พบการตั้งค่าที่ระบุ'})
+        
+        return jsonify({
+            'success': True,
+            'settings': settings.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting work time settings {settings_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการโหลดข้อมูล'})
+
+
+@app.route('/admin/work-time/<int:settings_id>', methods=['PUT'])
+@login_required
+@admin_required
+def admin_update_work_time(settings_id):
+    """Update work time settings"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'ไม่พบข้อมูลที่ส่งมา'})
+        
+        # Validate time format if provided
+        import re
+        time_pattern = r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+        
+        update_data = {}
+        
+        if 'start_time' in data and data['start_time']:
+            if not re.match(time_pattern, data['start_time']):
+                return jsonify({'success': False, 'error': 'รูปแบบเวลาเริ่มงานไม่ถูกต้อง'})
+            update_data['start_time'] = data['start_time']
+        
+        if 'end_time' in data and data['end_time']:
+            if not re.match(time_pattern, data['end_time']):
+                return jsonify({'success': False, 'error': 'รูปแบบเวลาเลิกงานไม่ถูกต้อง'})
+            update_data['end_time'] = data['end_time']
+        
+        if 'break_duration_minutes' in data:
+            break_duration = int(data['break_duration_minutes'])
+            if break_duration < 0 or break_duration > 480:
+                return jsonify({'success': False, 'error': 'ระยะเวลาพักต้องอยู่ระหว่าง 0-480 นาที'})
+            update_data['break_duration_minutes'] = break_duration
+        
+        # Update settings
+        settings = work_time_repo.update_settings(settings_id, **update_data)
+        
+        if not settings:
+            return jsonify({'success': False, 'error': 'ไม่พบการตั้งค่าที่ระบุ'})
+        
+        logger.info(f"Admin {current_user.email} updated work time settings: {settings_id}")
+        return jsonify({
+            'success': True,
+            'message': 'อัปเดตการตั้งค่าเวลาทำงานสำเร็จ',
+            'settings': settings.to_dict()
+        })
+        
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)})
+    except Exception as e:
+        logger.error(f"Error updating work time settings {settings_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการอัปเดตการตั้งค่า'})
+
+
+@app.route('/admin/work-time/<int:settings_id>/activate', methods=['POST'])
+@login_required
+@admin_required
+def admin_activate_work_time(settings_id):
+    """Activate work time settings"""
+    try:
+        settings = work_time_repo.activate_settings(settings_id)
+        
+        if not settings:
+            return jsonify({'success': False, 'error': 'ไม่พบการตั้งค่าที่ระบุ'})
+        
+        logger.info(f"Admin {current_user.email} activated work time settings: {settings_id}")
+        return jsonify({
+            'success': True,
+            'message': 'เปิดใช้งานการตั้งค่าเวลาทำงานสำเร็จ',
+            'settings': settings.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error activating work time settings {settings_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการเปิดใช้งาน'})
+
+
+@app.route('/admin/work-time/<int:settings_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def admin_delete_work_time(settings_id):
+    """Delete work time settings"""
+    try:
+        # Check if this is the active settings
+        active_settings = work_time_repo.get_active_settings()
+        if active_settings and active_settings.id == settings_id:
+            return jsonify({'success': False, 'error': 'ไม่สามารถลบการตั้งค่าที่กำลังใช้งานอยู่ได้'})
+        
+        success = work_time_repo.delete_settings(settings_id)
+        
+        if not success:
+            return jsonify({'success': False, 'error': 'ไม่พบการตั้งค่าที่ระบุ'})
+        
+        logger.info(f"Admin {current_user.email} deleted work time settings: {settings_id}")
+        return jsonify({
+            'success': True,
+            'message': 'ลบการตั้งค่าเวลาทำงานสำเร็จ'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error deleting work time settings {settings_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการลบการตั้งค่า'})
 
 
 if __name__ == '__main__':
