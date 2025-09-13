@@ -6,6 +6,7 @@ from typing import Optional, Dict, Any, List
 from database import DatabaseManager, DatabaseQueryError
 from security_utils import sanitize_user_input, SecurityValidator
 import logging
+import pymysql  # Added for cursor access
 
 logger = logging.getLogger(__name__)
 
@@ -217,121 +218,12 @@ class EmployeeRepository:
             return None
             
         except DatabaseQueryError as e:
-            logger.error(f"Failed to find employee by id {employee_id}: {e}")
+            logger.error(f"Failed to find employee by ID {employee_id}: {e}")
             raise
-    
-    def create_or_update(self, google_user_info: Dict[str, Any]) -> Employee:
-        """
-        Create new employee or update existing employee with Google OAuth user data
-        
-        This method handles both creation of new employees and updating existing
-        employees when they log in again with potentially updated information.
-        
-        Args:
-            google_user_info: Dictionary containing Google OAuth user data
-                Expected keys: 'sub' (google_id), 'email', 'name', 'picture'
-                
-        Returns:
-            Employee object (newly created or updated)
-            
-        Raises:
-            DatabaseQueryError: If database operation fails
-            ValueError: If required fields are missing from google_user_info
-        """
-        # Validate required fields
-        required_fields = ['sub', 'email']
-        missing_fields = [field for field in required_fields if field not in google_user_info]
-        if missing_fields:
-            raise ValueError(f"Missing required fields in google_user_info: {missing_fields}")
-        
-        # Sanitize input data
-        google_id = sanitize_user_input(google_user_info['sub'])
-        email = sanitize_user_input(google_user_info['email'])
-        name = sanitize_user_input(google_user_info.get('name'))
-        picture_url = sanitize_user_input(google_user_info.get('picture'))
-        
-        # Additional validation for email format
-        if not SecurityValidator.validate_xss_input(email) or '@' not in email:
-            SecurityValidator.log_security_event("INVALID_EMAIL", f"Invalid email format: {email}")
-            raise ValueError("Invalid email format")
-        
-        try:
-            # Check if employee already exists
-            existing_employee = self.find_by_google_id(google_id)
-            
-            if existing_employee:
-                # Update existing employee
-                logger.info(f"Updating existing employee: {email}")
-                return self._update_employee(existing_employee.id, email, name, picture_url)
-            else:
-                # Create new employee
-                logger.info(f"Creating new employee: {email}")
-                return self._create_employee(google_id, email, name, picture_url)
-                
-        except DatabaseQueryError as e:
-            logger.error(f"Failed to create or update employee {email}: {e}")
-            raise
-    
-    def _create_employee(self, google_id: str, email: str, name: str = None, picture_url: str = None) -> Employee:
-        """
-        Create a new employee record
-        
-        Args:
-            google_id: Google OAuth user ID
-            email: Employee email
-            name: Employee name (optional)
-            picture_url: Profile picture URL (optional)
-            
-        Returns:
-            Newly created Employee object
-        """
-        query = """
-            INSERT INTO employees (google_id, email, name, picture_url)
-            VALUES (%s, %s, %s, %s)
-        """
-        
-        self.db_manager.execute_query(query, (google_id, email, name, picture_url))
-        
-        # Retrieve the newly created employee
-        created_employee = self.find_by_google_id(google_id)
-        if not created_employee:
-            raise DatabaseQueryError("Failed to retrieve newly created employee")
-        
-        logger.info(f"Successfully created employee: {email} (ID: {created_employee.id})")
-        return created_employee
-    
-    def _update_employee(self, employee_id: int, email: str, name: str = None, picture_url: str = None) -> Employee:
-        """
-        Update an existing employee record
-        
-        Args:
-            employee_id: Database ID of employee to update
-            email: Updated email address
-            name: Updated name (optional)
-            picture_url: Updated profile picture URL (optional)
-            
-        Returns:
-            Updated Employee object
-        """
-        query = """
-            UPDATE employees 
-            SET email = %s, name = %s, picture_url = %s
-            WHERE id = %s
-        """
-        
-        self.db_manager.execute_query(query, (email, name, picture_url, employee_id))
-        
-        # Retrieve the updated employee
-        updated_employee = self.find_by_id(employee_id)
-        if not updated_employee:
-            raise DatabaseQueryError("Failed to retrieve updated employee")
-        
-        logger.info(f"Successfully updated employee: {email} (ID: {employee_id})")
-        return updated_employee
     
     def get_all_employees(self) -> List[Employee]:
         """
-        Get all employees (admin function)
+        Get all employees in the system
         
         Returns:
             List of Employee objects
@@ -340,7 +232,7 @@ class EmployeeRepository:
             query = """
                 SELECT id, google_id, email, name, picture_url, created_at, role
                 FROM employees 
-                ORDER BY created_at DESC
+                ORDER BY name
             """
             
             results = self.db_manager.execute_query(query, fetch_results=True)
@@ -365,32 +257,239 @@ class EmployeeRepository:
     
     def update_employee_role(self, employee_id: int, role: str) -> bool:
         """
-        Update employee role (admin function)
+        Update employee role (admin/employee)
         
         Args:
-            employee_id: Database ID of employee
+            employee_id: Database primary key
             role: New role ('employee' or 'admin')
             
         Returns:
-            True if successful
+            True if successful, False otherwise
         """
         try:
-            if role not in ['employee', 'admin']:
-                raise ValueError("Role must be 'employee' or 'admin'")
-            
             query = """
                 UPDATE employees 
-                SET role = %s
+                SET role = %s 
                 WHERE id = %s
             """
             
             self.db_manager.execute_query(query, (role, employee_id))
-            logger.info(f"Successfully updated employee {employee_id} role to {role}")
             return True
             
         except DatabaseQueryError as e:
-            logger.error(f"Failed to update employee {employee_id} role: {e}")
+            logger.error(f"Failed to update employee role for ID {employee_id}: {e}")
+            return False
+
+
+class Department:
+    """
+    Department class representing a department in the organization
+    """
+    
+    def __init__(self, id: int, name: str, description: str = None, created_at: str = None):
+        """
+        Initialize Department instance
+        
+        Args:
+            id: Database primary key
+            name: Department name
+            description: Department description
+            created_at: Creation timestamp
+        """
+        self.id = id
+        self.name = name
+        self.description = description
+        self.created_at = created_at
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert Department object to dictionary representation
+        
+        Returns:
+            Dictionary containing department data
+        """
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'created_at': self.created_at
+        }
+
+
+class DepartmentRepository:
+    """
+    Repository class for Department data operations
+    """
+    
+    def __init__(self):
+        """Initialize repository with database manager"""
+        self.db_manager = DatabaseManager()
+    
+    def create_department(self, name: str, description: str = None) -> Department:
+        """
+        Create a new department
+        
+        Args:
+            name: Department name
+            description: Department description (optional)
+            
+        Returns:
+            Created Department object
+        """
+        try:
+            query = """
+                INSERT INTO departments (name, description)
+                VALUES (%s, %s)
+            """
+            
+            # Execute the query and get the connection to retrieve the insert ID
+            with self.db_manager.get_db_connection() as connection:
+                with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                    cursor.execute(query, (name, description))
+                    connection.commit()
+                    department_id = cursor.lastrowid
+            
+            return Department(
+                id=department_id,
+                name=name,
+                description=description,
+                created_at=None  # Will be set by database
+            )
+            
+        except DatabaseQueryError as e:
+            logger.error(f"Failed to create department '{name}': {e}")
             raise
+    
+    def get_all_departments(self) -> List[Department]:
+        """
+        Get all departments
+        
+        Returns:
+            List of Department objects
+        """
+        try:
+            query = """
+                SELECT id, name, description, created_at
+                FROM departments
+                ORDER BY name
+            """
+            
+            results = self.db_manager.execute_query(query, fetch_results=True)
+            
+            departments = []
+            for row in results:
+                departments.append(Department(
+                    id=row['id'],
+                    name=row['name'],
+                    description=row['description'],
+                    created_at=row['created_at']
+                ))
+            
+            return departments
+            
+        except DatabaseQueryError as e:
+            logger.error(f"Failed to get all departments: {e}")
+            raise
+    
+    def get_department_by_id(self, department_id: int) -> Optional[Department]:
+        """
+        Get department by ID
+        
+        Args:
+            department_id: Department ID
+            
+        Returns:
+            Department object if found, None otherwise
+        """
+        try:
+            query = """
+                SELECT id, name, description, created_at
+                FROM departments
+                WHERE id = %s
+            """
+            
+            results = self.db_manager.execute_query(query, (department_id,), fetch_results=True)
+            
+            if results:
+                row = results[0]
+                return Department(
+                    id=row['id'],
+                    name=row['name'],
+                    description=row['description'],
+                    created_at=row['created_at']
+                )
+            
+            return None
+            
+        except DatabaseQueryError as e:
+            logger.error(f"Failed to get department by ID {department_id}: {e}")
+            raise
+    
+    def update_department(self, department_id: int, name: str = None, description: str = None) -> Optional[Department]:
+        """
+        Update department information
+        
+        Args:
+            department_id: Department ID
+            name: New department name (optional)
+            description: New department description (optional)
+            
+        Returns:
+            Updated Department object if successful, None otherwise
+        """
+        try:
+            # Build dynamic update query
+            update_fields = []
+            params = []
+            
+            if name is not None:
+                update_fields.append("name = %s")
+                params.append(name)
+            
+            if description is not None:
+                update_fields.append("description = %s")
+                params.append(description)
+            
+            # If no fields to update, return None
+            if not update_fields:
+                return None
+            
+            # Add department_id to params
+            params.append(department_id)
+            
+            query = f"""
+                UPDATE departments
+                SET {', '.join(update_fields)}
+                WHERE id = %s
+            """
+            
+            self.db_manager.execute_query(query, tuple(params))
+            
+            # Return updated department
+            return self.get_department_by_id(department_id)
+            
+        except DatabaseQueryError as e:
+            logger.error(f"Failed to update department ID {department_id}: {e}")
+            raise
+    
+    def delete_department(self, department_id: int) -> bool:
+        """
+        Delete a department
+        
+        Args:
+            department_id: Department ID
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            query = "DELETE FROM departments WHERE id = %s"
+            self.db_manager.execute_query(query, (department_id,))
+            return True
+            
+        except DatabaseQueryError as e:
+            logger.error(f"Failed to delete department ID {department_id}: {e}")
+            return False
 
 
 class AttendanceRepository:

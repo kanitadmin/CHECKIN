@@ -250,6 +250,16 @@ CREATE TABLE IF NOT EXISTS work_time_settings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 """
 
+DEPARTMENTS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS departments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+"""
+
 
 def initialize_database() -> None:
     """
@@ -280,6 +290,11 @@ def initialize_database() -> None:
         logger.info("Creating work time settings table...")
         db_manager.execute_query(WORK_TIME_SETTINGS_TABLE_SQL)
         logger.info("Work time settings table created successfully")
+        
+        # Create departments table
+        logger.info("Creating departments table...")
+        db_manager.execute_query(DEPARTMENTS_TABLE_SQL)
+        logger.info("Departments table created successfully")
         
         # Run migrations for existing databases
         migrate_database()
@@ -326,6 +341,27 @@ def migrate_database() -> None:
             logger.info("Role column added successfully")
         else:
             logger.info("Role column already exists, skipping migration")
+        
+        # Check if departments table exists
+        check_departments_table_query = """
+            SELECT COUNT(*) as count
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = %s 
+            AND TABLE_NAME = 'departments'
+        """
+        
+        result = db_manager.execute_query(
+            check_departments_table_query, 
+            (os.getenv('DB_NAME'),), 
+            fetch_results=True
+        )
+        
+        if result and result[0]['count'] == 0:
+            logger.info("Creating departments table...")
+            db_manager.execute_query(DEPARTMENTS_TABLE_SQL)
+            logger.info("Departments table created successfully")
+        else:
+            logger.info("Departments table already exists, skipping creation")
         
         logger.info("Database migrations completed successfully")
         

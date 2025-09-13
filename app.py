@@ -9,7 +9,7 @@ import secrets
 import requests
 import time
 from database import initialize_database, verify_database_schema, DatabaseConnectionError, DatabaseQueryError
-from models import EmployeeRepository, AttendanceRepository
+from models import EmployeeRepository, AttendanceRepository, DepartmentRepository
 from location_models import LocationRepository, LocationValidator
 from security_utils import SecurityValidator, sanitize_user_input
 
@@ -1648,6 +1648,147 @@ def admin_delete_work_time(settings_id):
     except Exception as e:
         logger.error(f"Error deleting work time settings {settings_id}: {e}")
         return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการลบการตั้งค่า'})
+
+
+@app.route('/admin/departments')
+@login_required
+@admin_required
+def admin_departments():
+    """Admin department management page"""
+    try:
+        # Initialize department repository
+        department_repo = DepartmentRepository()
+        departments = department_repo.get_all_departments()
+        return render_template('admin/departments.html', departments=departments)
+    except Exception as e:
+        logger.error(f"Error loading departments page: {e}")
+        flash('เกิดข้อผิดพลาดในการโหลดข้อมูลฝ่าย', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/departments', methods=['POST'])
+@login_required
+@admin_required
+def admin_create_department():
+    """Create new department"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'ไม่พบข้อมูลที่ส่งมา'})
+        
+        # Validate required fields
+        if 'name' not in data or not data['name']:
+            return jsonify({'success': False, 'error': 'กรุณากรอกชื่อฝ่าย'})
+        
+        name = data['name'].strip()
+        description = data.get('description', '').strip() if data.get('description') else ''
+        
+        # Initialize department repository
+        department_repo = DepartmentRepository()
+        
+        # Create department
+        department = department_repo.create_department(name=name, description=description)
+        
+        logger.info(f"Admin {current_user.email} created department: {department.name}")
+        return jsonify({
+            'success': True, 
+            'message': 'เพิ่มฝ่ายใหม่สำเร็จ',
+            'department': department.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating department: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการเพิ่มฝ่าย'})
+
+
+@app.route('/admin/departments/<int:department_id>')
+@login_required
+@admin_required
+def admin_get_department(department_id):
+    """Get department details"""
+    try:
+        # Initialize department repository
+        department_repo = DepartmentRepository()
+        department = department_repo.get_department_by_id(department_id)
+        
+        if not department:
+            return jsonify({'success': False, 'error': 'ไม่พบฝ่ายที่ระบุ'})
+        
+        return jsonify({
+            'success': True,
+            'department': department.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting department {department_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการโหลดข้อมูล'})
+
+
+@app.route('/admin/departments/<int:department_id>', methods=['PUT'])
+@login_required
+@admin_required
+def admin_update_department(department_id):
+    """Update department information"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'ไม่พบข้อมูลที่ส่งมา'})
+        
+        # Initialize department repository
+        department_repo = DepartmentRepository()
+        
+        # Update department
+        department = department_repo.update_department(
+            department_id=department_id,
+            name=data.get('name'),
+            description=data.get('description')
+        )
+        
+        if not department:
+            return jsonify({'success': False, 'error': 'ไม่พบฝ่ายที่ระบุ'})
+        
+        logger.info(f"Admin {current_user.email} updated department: {department.name}")
+        return jsonify({
+            'success': True,
+            'message': 'อัปเดตข้อมูลฝ่ายสำเร็จ',
+            'department': department.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating department {department_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลฝ่าย'})
+
+
+@app.route('/admin/departments/<int:department_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def admin_delete_department(department_id):
+    """Delete department"""
+    try:
+        # Initialize department repository
+        department_repo = DepartmentRepository()
+        department = department_repo.get_department_by_id(department_id)
+        
+        if not department:
+            return jsonify({'success': False, 'error': 'ไม่พบฝ่ายที่ระบุ'})
+        
+        # Delete department
+        success = department_repo.delete_department(department_id)
+        
+        if not success:
+            return jsonify({'success': False, 'error': 'ไม่สามารถลบฝ่ายได้'})
+        
+        logger.info(f"Admin {current_user.email} deleted department: {department.name}")
+        return jsonify({
+            'success': True,
+            'message': 'ลบฝ่ายสำเร็จ'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error deleting department {department_id}: {e}")
+        return jsonify({'success': False, 'error': 'เกิดข้อผิดพลาดในการลบฝ่าย'})
 
 
 if __name__ == '__main__':

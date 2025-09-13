@@ -717,6 +717,13 @@
                         <span class="nav-text">ตั้งค่าเวลาทำงาน</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin_departments') }}" 
+                       class="nav-link {% if request.endpoint == 'admin_departments' %}active{% endif %}">
+                        <i class="nav-icon fas fa-building"></i>
+                        <span class="nav-text">จัดการฝ่าย</span>
+                    </a>
+                </li>
             </ul>
         </nav>
         

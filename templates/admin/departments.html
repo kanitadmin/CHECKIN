@@ -1,0 +1,433 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block admin_extra_css %}
+<style>
+    .department-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .department-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .department-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .department-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+    
+    .department-description {
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+    }
+    
+    .department-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.show {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray-500);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        transition: all 0.2s ease;
+    }
+    
+    .modal-close:hover {
+        background: var(--gray-100);
+        color: var(--gray-700);
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray-500);
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--gray-300);
+    }
+    
+    .empty-state h3 {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <div class="admin-page-header-content">
+        <h1 class="admin-page-title">
+            <i class="fas fa-building"></i>
+            จัดการฝ่าย
+        </h1>
+        <p class="admin-page-subtitle">จัดการข้อมูลฝ่ายและแผนกในองค์กร</p>
+    </div>
+</div>
+
+<div class="admin-page-container">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-icon info">
+                <i class="fas fa-list"></i>
+            </div>
+            <h2 class="admin-card-title">รายการฝ่าย</h2>
+            <button id="addDepartmentBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                เพิ่มฝ่ายใหม่
+            </button>
+        </div>
+        
+        <div id="departmentsContainer">
+            {% if departments %}
+                {% for department in departments %}
+                <div class="department-card" data-department-id="{{ department.id }}">
+                    <div class="department-header">
+                        <h3 class="department-title">{{ department.name }}</h3>
+                        <div class="department-actions">
+                            <button class="btn btn-sm btn-info edit-department-btn" data-department-id="{{ department.id }}">
+                                <i class="fas fa-edit"></i>
+                                แก้ไข
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-department-btn" data-department-id="{{ department.id }}">
+                                <i class="fas fa-trash"></i>
+                                ลบ
+                            </button>
+                        </div>
+                    </div>
+                    {% if department.description %}
+                    <p class="department-description">{{ department.description }}</p>
+                    {% endif %}
+                    <small class="text-muted">สร้างเมื่อ: {{ department.created_at }}</small>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3>ยังไม่มีข้อมูลฝ่าย</h3>
+                    <p>คลิกที่ปุ่ม "เพิ่มฝ่ายใหม่" เพื่อสร้างฝ่ายแรกของคุณ</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Department Modal -->
+<div id="departmentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">เพิ่มฝ่ายใหม่</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="departmentForm">
+                <input type="hidden" id="departmentId">
+                <div class="form-group">
+                    <label for="departmentName">ชื่อฝ่าย *</label>
+                    <input type="text" id="departmentName" class="form-control" placeholder="เช่น ฝ่ายบัญชี, ฝ่ายการตลาด" required>
+                </div>
+                <div class="form-group">
+                    <label for="departmentDescription">คำอธิบาย</label>
+                    <textarea id="departmentDescription" class="form-control" rows="3" placeholder="คำอธิบายเกี่ยวกับฝ่ายนี้"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelModalBtn">ยกเลิก</button>
+            <button class="btn btn-primary" id="saveDepartmentBtn">บันทึก</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">ยืนยันการลบ</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>คุณแน่ใจหรือไม่ที่ต้องการลบฝายนี้? การกระทำนี้ไม่สามารถยกเลิกได้</p>
+            <input type="hidden" id="deleteDepartmentId">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelDeleteBtn">ยกเลิก</button>
+            <button class="btn btn-danger" id="confirmDeleteBtn">ลบ</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+    // DOM Elements
+    const addDepartmentBtn = document.getElementById('addDepartmentBtn');
+    const departmentModal = document.getElementById('departmentModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const departmentForm = document.getElementById('departmentForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const departmentIdInput = document.getElementById('departmentId');
+    const departmentNameInput = document.getElementById('departmentName');
+    const departmentDescriptionInput = document.getElementById('departmentDescription');
+    const deleteDepartmentIdInput = document.getElementById('deleteDepartmentId');
+    const saveDepartmentBtn = document.getElementById('saveDepartmentBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    
+    // Event Listeners
+    addDepartmentBtn.addEventListener('click', showAddDepartmentModal);
+    document.querySelectorAll('.edit-department-btn').forEach(btn => {
+        btn.addEventListener('click', showEditDepartmentModal);
+    });
+    document.querySelectorAll('.delete-department-btn').forEach(btn => {
+        btn.addEventListener('click', showDeleteModal);
+    });
+    document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', closeModal);
+    });
+    document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+    saveDepartmentBtn.addEventListener('click', saveDepartment);
+    confirmDeleteBtn.addEventListener('click', deleteDepartment);
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === departmentModal) closeModal();
+        if (e.target === deleteModal) closeDeleteModal();
+    });
+    
+    // Show Add Department Modal
+    function showAddDepartmentModal() {
+        // Reset form
+        departmentForm.reset();
+        departmentIdInput.value = '';
+        modalTitle.textContent = 'เพิ่มฝ่ายใหม่';
+        departmentModal.classList.add('show');
+    }
+    
+    // Show Edit Department Modal
+    function showEditDepartmentModal(e) {
+        const departmentId = e.target.closest('.edit-department-btn').dataset.departmentId;
+        
+        // Fetch department details
+        fetch(`/admin/departments/${departmentId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const department = data.department;
+                    departmentIdInput.value = department.id;
+                    departmentNameInput.value = department.name;
+                    departmentDescriptionInput.value = department.description || '';
+                    modalTitle.textContent = 'แก้ไขฝ่าย';
+                    departmentModal.classList.add('show');
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+            });
+    }
+    
+    // Show Delete Modal
+    function showDeleteModal(e) {
+        const departmentId = e.target.closest('.delete-department-btn').dataset.departmentId;
+        deleteDepartmentIdInput.value = departmentId;
+        deleteModal.classList.add('show');
+    }
+    
+    // Close Modals
+    function closeModal() {
+        departmentModal.classList.remove('show');
+    }
+    
+    function closeDeleteModal() {
+        deleteModal.classList.remove('show');
+    }
+    
+    // Save Department
+    function saveDepartment() {
+        const departmentId = departmentIdInput.value;
+        const name = departmentNameInput.value.trim();
+        const description = departmentDescriptionInput.value.trim();
+        
+        if (!name) {
+            showNotification('กรุณากรอกชื่อฝ่าย', 'error');
+            return;
+        }
+        
+        const formData = {
+            name: name,
+            description: description
+        };
+        
+        const url = departmentId ? `/admin/departments/${departmentId}` : '/admin/departments';
+        const method = departmentId ? 'PUT' : 'POST';
+        
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                closeModal();
+                // Reload the page to show updated data
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                showNotification(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+        });
+    }
+    
+    // Delete Department
+    function deleteDepartment() {
+        const departmentId = deleteDepartmentIdInput.value;
+        
+        fetch(`/admin/departments/${departmentId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                closeDeleteModal();
+                // Remove the deleted department from the DOM
+                document.querySelector(`.department-card[data-department-id="${departmentId}"]`).remove();
+            } else {
+                showNotification(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
+        });
+    }
+    
+    // Show Notification
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <button class="notification-close">&times;</button>
+        `;
+        
+        // Add close functionality
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            notification.remove();
+        });
+        
+        // Add to document
+        document.body.appendChild(notification);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+</script>
+{% endblock %}
