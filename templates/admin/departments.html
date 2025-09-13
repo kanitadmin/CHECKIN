@@ -4,7 +4,7 @@
 <style>
     .department-card {
         background: white;
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-xl);
         padding: 1.25rem;
         box-shadow: var(--shadow-md);
         border: 1px solid var(--gray-200);
@@ -15,6 +15,16 @@
     .department-card:hover {
         transform: translateY(-1px);
         box-shadow: var(--shadow-lg);
+    }
+    
+    .department-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
     }
     
     .department-header {
@@ -88,7 +98,7 @@
     
     .modal-content {
         background: white;
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-xl);
         box-shadow: var(--shadow-xl);
         width: 100%;
         max-width: 450px;
@@ -149,8 +159,8 @@
     }
     
     .empty-state-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
         color: var(--gray-300);
     }
     
@@ -198,7 +208,7 @@
         width: 100%;
         padding: 0.625rem 0.875rem;
         border: 1px solid var(--gray-300);
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-lg);
         font-size: 0.875rem;
         transition: all 0.2s ease;
         background: white;
@@ -214,7 +224,7 @@
     /* Button styles */
     .btn {
         padding: 0.625rem 1.125rem;
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-lg);
         font-weight: 500;
         text-decoration: none;
         display: inline-flex;
@@ -798,42 +808,99 @@
         });
     }
     
-    // Remove employee from department
-    function removeEmployeeFromDepartment(e) {
-        const employeeId = e.target.closest('.remove-employee-btn').dataset.employeeId;
-        const departmentId = e.target.closest('.remove-employee-btn').dataset.departmentId;
+    // Save department
+    function saveDepartment() {
+        const departmentId = departmentIdInput.value;
+        const name = departmentNameInput.value;
+        const description = departmentDescriptionInput.value;
         
-        // Send request to remove employee from department
-        fetch(`/admin/employees/${employeeId}/department`, {
-            method: 'POST',
+        if (!name) {
+            showNotification('กรุณาระบุชื่อฝ่าย', 'error');
+            return;
+        }
+        
+        const url = departmentId ? `/admin/departments/${departmentId}` : '/admin/departments';
+        const method = departmentId ? 'PUT' : 'POST';
+        
+        fetch(url, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                department_id: null
-            })
+            body: JSON.stringify({ name, description })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Refresh the department employee list
-                loadDepartmentEmployees(departmentId);
-                // Also refresh the assign modal if it's open
-                if (assignEmployeeModal.classList.contains('show') && assignDepartmentIdInput.value === departmentId) {
-                    renderEmployeeOptions(departmentId);
-                }
-                showNotification('นำพนักงานออกจากฝายเรียบร้อย', 'success');
+                showNotification(data.message, 'success');
+                closeModal();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
             } else {
                 showNotification(data.error, 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('เกิดข้อผิดพลาดในการนำพนักงานออกจากฝาย', 'error');
+            showNotification('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
         });
     }
     
-    // Close Modals
+    // Delete department
+    function deleteDepartment() {
+        const departmentId = deleteDepartmentIdInput.value;
+        
+        fetch(`/admin/departments/${departmentId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                closeDeleteModal();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showNotification(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
+        });
+    }
+    
+    // Remove employee from department
+    function removeEmployeeFromDepartment(e) {
+        const employeeId = e.target.closest('.remove-employee-btn').dataset.employeeId;
+        const departmentId = e.target.closest('.remove-employee-btn').dataset.departmentId;
+        
+        fetch(`/admin/employees/${employeeId}/department`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ department_id: null })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Refresh the department employee list
+                loadDepartmentEmployees(departmentId);
+                showNotification('ลบพนักงานออกจากฝายนี้เรียบร้อยแล้ว', 'success');
+            } else {
+                showNotification(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('เกิดข้อผิดพลาดในการลบพนักงาน', 'error');
+        });
+    }
+    
+    // Close modals
     function closeModal() {
         departmentModal.classList.remove('show');
     }
@@ -846,102 +913,29 @@
         assignEmployeeModal.classList.remove('show');
     }
     
-    // Save Department
-    function saveDepartment() {
-        const departmentId = departmentIdInput.value;
-        const name = departmentNameInput.value.trim();
-        const description = departmentDescriptionInput.value.trim();
+    // Notification function
+    function showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(notification => notification.remove());
         
-        if (!name) {
-            showNotification('กรุณากรอกชื่อฝ่าย', 'error');
-            return;
-        }
-        
-        const formData = {
-            name: name,
-            description: description
-        };
-        
-        const url = departmentId ? `/admin/departments/${departmentId}` : '/admin/departments';
-        const method = departmentId ? 'PUT' : 'POST';
-        
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeModal();
-                // Reload the page to show updated data
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            } else {
-                showNotification(data.error, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
-        });
-    }
-    
-    // Delete Department
-    function deleteDepartment() {
-        const departmentId = deleteDepartmentIdInput.value;
-        
-        fetch(`/admin/departments/${departmentId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeDeleteModal();
-                // Remove the deleted department from the DOM
-                document.querySelector(`.department-card[data-department-id="${departmentId}"]`).remove();
-            } else {
-                showNotification(data.error, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
-        });
-    }
-    
-    // Show Notification
-    function showNotification(message, type) {
-        // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.innerHTML = `
             <div class="notification-content">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
                 <span>${message}</span>
             </div>
-            <button class="notification-close">&times;</button>
+            <button class="notification-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
         `;
         
-        // Add close functionality
-        notification.querySelector('.notification-close').addEventListener('click', () => {
-            notification.remove();
-        });
-        
-        // Add to document
         document.body.appendChild(notification);
         
         // Auto remove after 5 seconds
         setTimeout(() => {
-            if (notification.parentNode) {
+            if (notification.parentElement) {
                 notification.remove();
             }
         }, 5000);

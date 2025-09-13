@@ -89,19 +89,19 @@
         font-weight: 500;
     }
     
-    /* Navigation Cards - เฉพาะสำหรับแดชบอร์ด */
+    /* Navigation Cards - ปรับให้สอดคล้องกับ pattern ของหน้าอื่น */
     .nav-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
+        gap: 1.5rem;
         margin-bottom: 1.5rem;
     }
     
     .nav-card {
         background: white;
         padding: 1.5rem;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
         border: 1px solid var(--gray-200);
         text-decoration: none;
         color: inherit;
@@ -112,7 +112,7 @@
     
     .nav-card:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
+        box-shadow: var(--shadow-xl);
         text-decoration: none;
         color: inherit;
     }
@@ -123,34 +123,37 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
+        height: 4px;
         background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
     }
     
     .nav-icon {
-        width: 48px;
-        height: 48px;
+        width: 56px;
+        height: 56px;
         background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-lg);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.125rem;
+        font-size: 1.25rem;
         color: white;
-        margin-bottom: 0.75rem;
+        margin: 0 auto 1rem;
     }
     
     .nav-title {
-        font-size: 1.125rem;
-        font-weight: 600;
+        font-size: 1.25rem;
+        font-weight: 700;
         color: var(--gray-900);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+        text-align: center;
     }
     
     .nav-description {
         color: var(--gray-600);
         font-size: 0.875rem;
-        line-height: 1.5;
+        line-height: 1.6;
+        text-align: center;
+        margin-bottom: 0;
     }
     
     /* Employee Info Styles */
@@ -211,6 +214,10 @@
         .stat-value {
             font-size: 1.75rem;
         }
+        
+        .nav-card {
+            padding: 1.25rem;
+        }
     }
     
     @media (max-width: 480px) {
@@ -226,6 +233,12 @@
         
         .stat-value {
             font-size: 1.5rem;
+        }
+        
+        .nav-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1rem;
         }
     }
 </style>
@@ -285,32 +298,32 @@
             <div class="nav-icon">
                 <i class="fas fa-users-cog"></i>
             </div>
-            <div class="nav-title">จัดการพนักงาน</div>
-            <div class="nav-description">ดูรายชื่อพนักงาน แก้ไขข้อมูล และจัดการสิทธิ์การเข้าถึง</div>
+            <h2 class="nav-title">จัดการพนักงาน</h2>
+            <p class="nav-description">ดูรายชื่อพนักงาน แก้ไขข้อมูล และจัดการสิทธิ์การเข้าถึง</p>
         </a>
         
         <a href="{{ url_for('admin_locations') }}" class="nav-card">
             <div class="nav-icon">
                 <i class="fas fa-map-marker-alt"></i>
             </div>
-            <div class="nav-title">จัดการตำแหน่งที่ตั้ง</div>
-            <div class="nav-description">กำหนดตำแหน่งที่อนุญาตให้ลงเวลาทำงานได้</div>
+            <h2 class="nav-title">จัดการตำแหน่งที่ตั้ง</h2>
+            <p class="nav-description">กำหนดตำแหน่งที่อนุญาตให้ลงเวลาทำงานได้</p>
         </a>
         
         <a href="{{ url_for('admin_work_time') }}" class="nav-card">
             <div class="nav-icon">
                 <i class="fas fa-clock"></i>
             </div>
-            <div class="nav-title">ตั้งค่าเวลาทำงาน</div>
-            <div class="nav-description">กำหนดเวลาเข้างาน เวลาออกงาน และเวลาพัก</div>
+            <h2 class="nav-title">ตั้งค่าเวลาทำงาน</h2>
+            <p class="nav-description">กำหนดเวลาเข้างาน เวลาออกงาน และเวลาพัก</p>
         </a>
         
         <a href="{{ url_for('admin_departments') }}" class="nav-card">
             <div class="nav-icon">
                 <i class="fas fa-building"></i>
             </div>
-            <div class="nav-title">จัดการฝ่าย</div>
-            <div class="nav-description">จัดการข้อมูลฝ่ายและแผนกในองค์กร</div>
+            <h2 class="nav-title">จัดการฝ่าย</h2>
+            <p class="nav-description">จัดการข้อมูลฝ่ายและแผนกในองค์กร</p>
         </a>
     </div>
 

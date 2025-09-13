@@ -351,9 +351,8 @@
 
 {% block admin_content %}
 <div class="admin-page-container">
-    <div class="employee-detail-container">
-        <!-- Employee Header -->
-        <div class="admin-card employee-header-card">
+    <!-- Employee Header -->
+    <div class="admin-card employee-header-card">
             <div class="employee-basic-info">
                 {% if employee.picture_url %}
                 <img src="{{ url_for('proxy_image', url=employee.picture_url) }}" 
@@ -542,6 +541,5 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>
 {% endblock %}
