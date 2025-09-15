@@ -19,7 +19,7 @@ class Employee(UserMixin):
     for Flask-Login integration to manage user sessions.
     """
     
-    def __init__(self, id: int, google_id: str, email: str, name: str = None, picture_url: str = None, created_at: str = None, role: str = 'employee', department_id: int = None):
+    def __init__(self, id: int, google_id: str, email: str, name: Optional[str] = None, picture_url: Optional[str] = None, created_at: Optional[str] = None, updated_at: Optional[str] = None, role: str = 'employee', department_id: Optional[int] = None):
         """
         Initialize Employee instance
         
@@ -30,6 +30,7 @@ class Employee(UserMixin):
             name: Employee display name
             picture_url: URL to employee's profile picture
             created_at: Account creation timestamp
+            updated_at: Account last update timestamp
             role: User role (employee or admin)
             department_id: Department ID (foreign key)
         """
@@ -39,6 +40,7 @@ class Employee(UserMixin):
         self.name = name
         self.picture_url = picture_url
         self.created_at = created_at
+        self.updated_at = updated_at
         self.role = role
         self.department_id = department_id
     
@@ -50,7 +52,7 @@ class Employee(UserMixin):
         return str(self.id)
     
     @property
-    def is_authenticated(self) -> bool:
+    def is_authenticated(self):
         """
         Required by Flask-Login UserMixin
         Returns True if the user is authenticated (always True for valid Employee objects)
@@ -58,7 +60,7 @@ class Employee(UserMixin):
         return True
     
     @property
-    def is_active(self) -> bool:
+    def is_active(self):
         """
         Required by Flask-Login UserMixin
         Returns True if the user account is active (always True for this implementation)
@@ -66,7 +68,7 @@ class Employee(UserMixin):
         return True
     
     @property
-    def is_anonymous(self) -> bool:
+    def is_anonymous(self):
         """
         Required by Flask-Login UserMixin
         Returns False since Employee objects represent authenticated users
@@ -92,6 +94,7 @@ class Employee(UserMixin):
             'name': self.name,
             'picture_url': self.picture_url,
             'created_at': self.created_at,
+            'updated_at': self.updated_at,
             'role': self.role,
             'department_id': self.department_id
         }
@@ -113,6 +116,62 @@ class EmployeeRepository:
         """Initialize repository with database manager"""
         self.db_manager = DatabaseManager()
     
+    def create_or_update(self, user_info: Dict[str, Any]) -> Employee:
+        """
+        Create a new employee or update existing employee based on Google ID
+        
+        Args:
+            user_info: Dictionary containing user information from Google OAuth
+                      Expected keys: id (Google ID), email, name, picture
+            
+        Returns:
+            Employee object
+        """
+        try:
+            google_id = user_info.get('id')
+            if not google_id:
+                raise ValueError("Google ID is required")
+                
+            email = user_info.get('email')
+            name = user_info.get('name')
+            picture_url = user_info.get('picture')
+            
+            # First, try to find existing employee by Google ID
+            existing_employee = self.find_by_google_id(google_id)
+            
+            if existing_employee:
+                # Update existing employee
+                query = """
+                    UPDATE employees 
+                    SET email = %s, name = %s, picture_url = %s, updated_at = NOW()
+                    WHERE google_id = %s
+                """
+                self.db_manager.execute_query(query, (email, name, picture_url, google_id))
+                
+                # Return updated employee
+                updated_employee = self.find_by_google_id(google_id)
+                if not updated_employee:
+                    raise DatabaseQueryError("Failed to retrieve updated employee")
+                return updated_employee
+            else:
+                # Create new employee
+                query = """
+                    INSERT INTO employees (google_id, email, name, picture_url, role)
+                    VALUES (%s, %s, %s, %s, 'employee')
+                """
+                self.db_manager.execute_query(query, (google_id, email, name, picture_url))
+                
+                # Return newly created employee
+                new_employee = self.find_by_google_id(google_id)
+                if not new_employee:
+                    raise DatabaseQueryError("Failed to retrieve newly created employee")
+                return new_employee
+                
+        except DatabaseQueryError as e:
+            google_id = user_info.get('id') if user_info else "unknown"
+            logger.error(f"Failed to create or update employee with Google ID {google_id}: {e}")
+            raise
+    
     def find_by_google_id(self, google_id: str) -> Optional[Employee]:
         """
         Find employee by Google OAuth ID
@@ -125,7 +184,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
+                SELECT id, google_id, email, name, picture_url, created_at, updated_at, role, department_id
                 FROM employees 
                 WHERE google_id = %s
             """
@@ -141,6 +200,7 @@ class EmployeeRepository:
                     name=row['name'],
                     picture_url=row['picture_url'],
                     created_at=row['created_at'],
+                    updated_at=row.get('updated_at'),
                     role=row.get('role', 'employee'),
                     department_id=row.get('department_id')
                 )
@@ -163,7 +223,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
+                SELECT id, google_id, email, name, picture_url, created_at, updated_at, role, department_id
                 FROM employees 
                 WHERE email = %s
             """
@@ -179,6 +239,7 @@ class EmployeeRepository:
                     name=row['name'],
                     picture_url=row['picture_url'],
                     created_at=row['created_at'],
+                    updated_at=row.get('updated_at'),
                     role=row.get('role', 'employee'),
                     department_id=row.get('department_id')
                 )
@@ -201,7 +262,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
+                SELECT id, google_id, email, name, picture_url, created_at, updated_at, role, department_id
                 FROM employees 
                 WHERE id = %s
             """
@@ -217,6 +278,7 @@ class EmployeeRepository:
                     name=row['name'],
                     picture_url=row['picture_url'],
                     created_at=row['created_at'],
+                    updated_at=row.get('updated_at'),
                     role=row.get('role', 'employee'),
                     department_id=row.get('department_id')
                 )
@@ -236,7 +298,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
+                SELECT id, google_id, email, name, picture_url, created_at, updated_at, role, department_id
                 FROM employees 
                 ORDER BY name
             """
@@ -244,17 +306,19 @@ class EmployeeRepository:
             results = self.db_manager.execute_query(query, fetch_results=True)
             
             employees = []
-            for row in results:
-                employees.append(Employee(
-                    id=row['id'],
-                    google_id=row['google_id'],
-                    email=row['email'],
-                    name=row['name'],
-                    picture_url=row['picture_url'],
-                    created_at=row['created_at'],
-                    role=row.get('role', 'employee'),
-                    department_id=row.get('department_id')
-                ))
+            if results:
+                for row in results:
+                    employees.append(Employee(
+                        id=row['id'],
+                        google_id=row['google_id'],
+                        email=row['email'],
+                        name=row['name'],
+                        picture_url=row['picture_url'],
+                        created_at=row['created_at'],
+                        updated_at=row.get('updated_at'),
+                        role=row.get('role', 'employee'),
+                        department_id=row.get('department_id')
+                    ))
             
             return employees
             
@@ -324,7 +388,7 @@ class EmployeeRepository:
         """
         try:
             query = """
-                SELECT id, google_id, email, name, picture_url, created_at, role, department_id
+                SELECT id, google_id, email, name, picture_url, created_at, updated_at, role, department_id
                 FROM employees 
                 WHERE department_id = %s
                 ORDER BY name
@@ -333,17 +397,19 @@ class EmployeeRepository:
             results = self.db_manager.execute_query(query, (department_id,), fetch_results=True)
             
             employees = []
-            for row in results:
-                employees.append(Employee(
-                    id=row['id'],
-                    google_id=row['google_id'],
-                    email=row['email'],
-                    name=row['name'],
-                    picture_url=row['picture_url'],
-                    created_at=row['created_at'],
-                    role=row.get('role', 'employee'),
-                    department_id=row.get('department_id')
-                ))
+            if results:
+                for row in results:
+                    employees.append(Employee(
+                        id=row['id'],
+                        google_id=row['google_id'],
+                        email=row['email'],
+                        name=row['name'],
+                        picture_url=row['picture_url'],
+                        created_at=row['created_at'],
+                        updated_at=row.get('updated_at'),
+                        role=row.get('role', 'employee'),
+                        department_id=row.get('department_id')
+                    ))
             
             return employees
             
@@ -357,7 +423,7 @@ class Department:
     Department class representing a department in the organization
     """
     
-    def __init__(self, id: int, name: str, description: str = None, created_at: str = None):
+    def __init__(self, id: int, name: str, description: Optional[str] = None, created_at: Optional[str] = None):
         """
         Initialize Department instance
         
@@ -396,7 +462,7 @@ class DepartmentRepository:
         """Initialize repository with database manager"""
         self.db_manager = DatabaseManager()
     
-    def create_department(self, name: str, description: str = None) -> Department:
+    def create_department(self, name: str, description: Optional[str] = None) -> Department:
         """
         Create a new department
         
@@ -448,13 +514,14 @@ class DepartmentRepository:
             results = self.db_manager.execute_query(query, fetch_results=True)
             
             departments = []
-            for row in results:
-                departments.append(Department(
-                    id=row['id'],
-                    name=row['name'],
-                    description=row['description'],
-                    created_at=row['created_at']
-                ))
+            if results:
+                for row in results:
+                    departments.append(Department(
+                        id=row['id'],
+                        name=row['name'],
+                        description=row['description'],
+                        created_at=row['created_at']
+                    ))
             
             return departments
             
@@ -496,7 +563,7 @@ class DepartmentRepository:
             logger.error(f"Failed to get department by ID {department_id}: {e}")
             raise
     
-    def update_department(self, department_id: int, name: str = None, description: str = None) -> Optional[Department]:
+    def update_department(self, department_id: int, name: Optional[str] = None, description: Optional[str] = None) -> Optional[Department]:
         """
         Update department information
         
@@ -632,7 +699,7 @@ class AttendanceRepository:
             logger.error(f"Failed to get today's attendance for employee {employee_id}: {e}")
             raise
     
-    def create_checkin(self, employee_id: int, latitude: float = None, longitude: float = None, 
+    def create_checkin(self, employee_id: int, latitude: Optional[float] = None, longitude: Optional[float] = None, 
                       location_verified: bool = False) -> Dict[str, Any]:
         """
         Insert new attendance record with check_in_time, work_date, and location data
@@ -795,28 +862,32 @@ class AttendanceRepository:
         try:
             # Total employees
             total_employees_query = "SELECT COUNT(*) as count FROM employees"
-            total_employees = self.db_manager.execute_query(total_employees_query, fetch_results=True)[0]['count']
+            total_employees_result = self.db_manager.execute_query(total_employees_query, fetch_results=True)
+            total_employees = total_employees_result[0]['count'] if total_employees_result else 0
             
             # Today's check-ins
             today_checkins_query = """
                 SELECT COUNT(*) as count FROM attendances 
                 WHERE work_date = CURDATE() AND check_in_time IS NOT NULL
             """
-            today_checkins = self.db_manager.execute_query(today_checkins_query, fetch_results=True)[0]['count']
+            today_checkins_result = self.db_manager.execute_query(today_checkins_query, fetch_results=True)
+            today_checkins = today_checkins_result[0]['count'] if today_checkins_result else 0
             
             # Today's completed (checked out)
             today_completed_query = """
                 SELECT COUNT(*) as count FROM attendances 
                 WHERE work_date = CURDATE() AND check_out_time IS NOT NULL
             """
-            today_completed = self.db_manager.execute_query(today_completed_query, fetch_results=True)[0]['count']
+            today_completed_result = self.db_manager.execute_query(today_completed_query, fetch_results=True)
+            today_completed = today_completed_result[0]['count'] if today_completed_result else 0
             
             # This week's total records
             week_total_query = """
                 SELECT COUNT(*) as count FROM attendances 
                 WHERE work_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
             """
-            week_total = self.db_manager.execute_query(week_total_query, fetch_results=True)[0]['count']
+            week_total_result = self.db_manager.execute_query(week_total_query, fetch_results=True)
+            week_total = week_total_result[0]['count'] if week_total_result else 0
             
             return {
                 'total_employees': total_employees,
@@ -899,9 +970,9 @@ class WorkTimeSettings:
     Work time settings model for managing work hours configuration
     """
     
-    def __init__(self, id: int = None, start_time: str = None, end_time: str = None, 
+    def __init__(self, id: Optional[int] = None, start_time: Optional[str] = None, end_time: Optional[str] = None, 
                  break_duration_minutes: int = 60, is_active: bool = True, 
-                 created_at: str = None, updated_at: str = None):
+                 created_at: Optional[str] = None, updated_at: Optional[str] = None):
         """
         Initialize WorkTimeSettings instance
         
@@ -1003,16 +1074,17 @@ class WorkTimeRepository:
             results = self.db_manager.execute_query(query, fetch_results=True)
             
             settings = []
-            for row in results:
-                settings.append(WorkTimeSettings(
-                    id=row['id'],
-                    start_time=str(row['start_time']) if row['start_time'] else None,
-                    end_time=str(row['end_time']) if row['end_time'] else None,
-                    break_duration_minutes=row['break_duration_minutes'],
-                    is_active=bool(row['is_active']),
-                    created_at=row['created_at'],
-                    updated_at=row['updated_at']
-                ))
+            if results:
+                for row in results:
+                    settings.append(WorkTimeSettings(
+                        id=row['id'],
+                        start_time=str(row['start_time']) if row['start_time'] else None,
+                        end_time=str(row['end_time']) if row['end_time'] else None,
+                        break_duration_minutes=row['break_duration_minutes'],
+                        is_active=bool(row['is_active']),
+                        created_at=row['created_at'],
+                        updated_at=row['updated_at']
+                    ))
             
             return settings
             
@@ -1057,8 +1129,8 @@ class WorkTimeRepository:
             logger.error(f"Failed to create work time settings: {e}")
             raise
     
-    def update_settings(self, settings_id: int, start_time: str = None, 
-                       end_time: str = None, break_duration_minutes: int = None) -> WorkTimeSettings:
+    def update_settings(self, settings_id: int, start_time: Optional[str] = None, 
+                       end_time: Optional[str] = None, break_duration_minutes: Optional[int] = None) -> WorkTimeSettings:
         """
         Update existing work time settings
         
@@ -1100,7 +1172,7 @@ class WorkTimeRepository:
                 WHERE id = %s
             """
             
-            self.db_manager.execute_query(query, params)
+            self.db_manager.execute_query(query, tuple(params))
             
             # Get updated settings
             updated_settings = self.get_settings_by_id(settings_id)

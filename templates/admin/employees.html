@@ -10,12 +10,12 @@
     }
     
     .page-header {
-        background: white;
-        padding: 1.25rem;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-        margin-bottom: 1.5rem;
+        background: #ffffff;
+        padding: var(--apple-spacing-5);
+        border-radius: var(--apple-radius-2xl);
+        box-shadow: var(--apple-shadow-md);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: var(--apple-spacing-5);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -24,14 +24,14 @@
     .header-content {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: var(--apple-spacing-2);
     }
     
     .header-icon {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
-        border-radius: var(--radius-md);
+        background: var(--apple-system-blue);
+        border-radius: var(--apple-radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -40,59 +40,59 @@
     }
     
     .header-text h1 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--gray-900);
+        font-size: var(--apple-font-size-lg);
+        font-weight: 600;
+        color: var(--apple-system-gray-dark);
         margin: 0;
     }
     
     .header-text p {
-        color: var(--gray-600);
+        color: var(--apple-system-gray);
         margin: 0;
-        font-size: 0.875rem;
+        font-size: var(--apple-font-size-sm);
     }
     
     .back-btn {
-        background: var(--gray-100);
-        color: var(--gray-700);
-        padding: 0.5rem 1rem;
-        border-radius: var(--radius-md);
+        background: var(--apple-system-gray-light);
+        color: var(--apple-system-gray-dark);
+        padding: var(--apple-spacing-2) var(--apple-spacing-4);
+        border-radius: var(--apple-radius-md);
         text-decoration: none;
         font-weight: 500;
-        transition: all 0.2s ease;
+        transition: var(--apple-transition-fast);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        border: 1px solid var(--gray-300);
+        gap: var(--apple-spacing-2);
+        font-size: var(--apple-font-size-sm);
+        border: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .back-btn:hover {
-        background: var(--gray-200);
-        color: var(--gray-800);
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--apple-system-gray-dark);
         text-decoration: none;
     }
     
     .employees-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1rem;
+        gap: var(--apple-spacing-4);
     }
     
     .employee-card {
-        background: white;
-        border-radius: var(--radius-xl);
-        padding: 1.25rem;
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-        transition: all 0.3s ease;
+        background: #ffffff;
+        border-radius: var(--apple-radius-3xl);
+        padding: var(--apple-spacing-5);
+        box-shadow: var(--apple-shadow-md);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: var(--apple-transition-normal);
         position: relative;
         overflow: hidden;
     }
     
     .employee-card:hover {
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+        box-shadow: var(--apple-shadow-lg);
     }
     
     .employee-card::before {
@@ -102,75 +102,75 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+        background: var(--apple-system-blue);
     }
     
     .employee-card.admin::before {
-        background: linear-gradient(90deg, var(--warning-500), var(--warning-600));
+        background: var(--apple-system-orange);
     }
     
     .employee-header {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
+        gap: var(--apple-spacing-2);
+        margin-bottom: var(--apple-spacing-4);
     }
     
     .employee-avatar {
         width: 50px;
         height: 50px;
-        border-radius: 50%;
+        border-radius: var(--apple-radius-full);
         object-fit: cover;
-        border: 2px solid var(--gray-200);
+        border: 2px solid rgba(0, 0, 0, 0.05);
     }
     
     .employee-avatar-placeholder {
         width: 50px;
         height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--gray-300), var(--gray-400));
+        border-radius: var(--apple-radius-full);
+        background: var(--apple-system-gray-light);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: var(--apple-system-gray);
         font-size: 1rem;
-        border: 2px solid var(--gray-200);
+        border: 2px solid rgba(0, 0, 0, 0.05);
     }
     
     .employee-info h3 {
-        font-size: 1rem;
+        font-size: var(--apple-font-size-base);
         font-weight: 600;
-        color: var(--gray-900);
+        color: var(--apple-system-gray-dark);
         margin: 0 0 0.125rem 0;
     }
     
     .employee-email {
-        color: var(--gray-600);
-        font-size: 0.8125rem;
+        color: var(--apple-system-gray);
+        font-size: var(--apple-font-size-xs);
         margin: 0;
     }
     
     .employee-details {
         display: grid;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
+        gap: var(--apple-spacing-3);
+        margin-bottom: var(--apple-spacing-4);
     }
     
     .detail-item {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem;
-        background: var(--gray-50);
-        border-radius: var(--radius-md);
+        gap: var(--apple-spacing-2);
+        padding: var(--apple-spacing-2);
+        background: var(--apple-system-gray-light);
+        border-radius: var(--apple-radius-md);
     }
     
     .detail-icon {
         width: 24px;
         height: 24px;
-        background: var(--primary-100);
-        color: var(--primary-600);
-        border-radius: var(--radius-sm);
+        background: rgba(0, 113, 227, 0.1);
+        color: var(--apple-system-blue);
+        border-radius: var(--apple-radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -182,8 +182,8 @@
     }
     
     .detail-label {
-        font-size: 0.6875rem;
-        color: var(--gray-500);
+        font-size: var(--apple-font-size-xs);
+        color: var(--apple-system-gray);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin: 0;
@@ -191,9 +191,9 @@
     
     .detail-value {
         font-weight: 500;
-        color: var(--gray-900);
+        color: var(--apple-system-gray-dark);
         margin: 0;
-        font-size: 0.8125rem;
+        font-size: var(--apple-font-size-sm);
     }
     
     .role-badge {
@@ -201,97 +201,97 @@
         align-items: center;
         gap: 0.375rem;
         padding: 0.25rem 0.5rem;
-        border-radius: var(--radius-md);
-        font-size: 0.75rem;
+        border-radius: var(--apple-radius-full);
+        font-size: var(--apple-font-size-xs);
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
     
     .role-employee {
-        background: var(--primary-50);
-        color: var(--primary-700);
-        border: 1px solid var(--primary-200);
+        background: rgba(0, 113, 227, 0.1);
+        color: var(--apple-system-blue);
+        border: 1px solid rgba(0, 113, 227, 0.2);
     }
     
     .role-admin {
-        background: var(--warning-50);
-        color: var(--warning-700);
-        border: 1px solid var(--warning-200);
+        background: rgba(255, 159, 10, 0.1);
+        color: var(--apple-system-orange);
+        border: 1px solid rgba(255, 159, 10, 0.2);
     }
     
     .employee-actions {
         display: flex;
-        gap: 0.5rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--gray-200);
+        gap: var(--apple-spacing-2);
+        margin-top: var(--apple-spacing-4);
+        padding-top: var(--apple-spacing-4);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .action-btn {
         flex: 1;
-        padding: 0.5rem 0.75rem;
-        border-radius: var(--radius-md);
+        padding: var(--apple-spacing-2) var(--apple-spacing-3);
+        border-radius: var(--apple-radius-md);
         border: none;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: var(--apple-transition-fast);
         text-decoration: none;
         text-align: center;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.375rem;
-        font-size: 0.8125rem;
+        font-size: var(--apple-font-size-sm);
     }
     
     .btn-view {
-        background: var(--primary-500);
+        background: var(--apple-system-blue);
         color: white;
     }
     
     .btn-view:hover {
-        background: var(--primary-600);
+        background: var(--apple-system-blue-dark);
         color: white;
         text-decoration: none;
     }
     
     .btn-role {
-        background: var(--gray-100);
-        color: var(--gray-700);
-        border: 1px solid var(--gray-300);
+        background: var(--apple-system-gray-light);
+        color: var(--apple-system-gray-dark);
+        border: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .btn-role:hover {
-        background: var(--gray-200);
-        color: var(--gray-800);
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--apple-system-gray-dark);
     }
     
     .btn-role.admin {
-        background: var(--warning-100);
-        color: var(--warning-700);
-        border: 1px solid var(--warning-300);
+        background: rgba(255, 159, 10, 0.1);
+        color: var(--apple-system-orange);
+        border: 1px solid rgba(255, 159, 10, 0.2);
     }
     
     .btn-role.admin:hover {
-        background: var(--warning-200);
-        color: var(--warning-800);
+        background: rgba(255, 159, 10, 0.2);
+        color: var(--apple-system-orange);
     }
     
     .no-employees {
         text-align: center;
-        padding: 2rem 1rem;
-        color: var(--gray-500);
-        background: white;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
+        padding: var(--apple-spacing-8) var(--apple-spacing-4);
+        color: var(--apple-system-gray);
+        background: #ffffff;
+        border-radius: var(--apple-radius-3xl);
+        box-shadow: var(--apple-shadow-md);
+        border: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .no-employees-icon {
         font-size: 2rem;
-        color: var(--gray-300);
-        margin-bottom: 0.75rem;
+        color: rgba(0, 0, 0, 0.1);
+        margin-bottom: var(--apple-spacing-3);
     }
     
     /* Loading and Success States */
@@ -318,7 +318,7 @@
     @media (max-width: 768px) {
         .page-header {
             flex-direction: column;
-            gap: 0.75rem;
+            gap: var(--apple-spacing-2);
             text-align: center;
         }
         
@@ -331,7 +331,7 @@
         }
         
         .employee-card {
-            padding: 1rem;
+            padding: var(--apple-spacing-4);
         }
     }
     
@@ -342,11 +342,11 @@
         }
         
         .employee-info {
-            margin-top: 0.5rem;
+            margin-top: var(--apple-spacing-2);
         }
         
         .header-text h1 {
-            font-size: 1.125rem;
+            font-size: var(--apple-font-size-base);
         }
     }
 </style>
@@ -364,7 +364,7 @@
         </div>
         <div class="card-content">
             <p>ดูรายชื่อพนักงานและจัดการสิทธิ์การเข้าถึง</p>
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary" style="margin-top: 1rem;">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary" style="margin-top: var(--apple-spacing-4);">
                 <i class="fas fa-arrow-left"></i>
                 กลับสู่แดชบอร์ด
             </a>
@@ -381,7 +381,7 @@
                 <img src="{{ url_for('proxy_image', url=employee.picture_url) }}" 
                      alt="Profile" 
                      class="employee-avatar"
-                     onerror="this.src='{{ url_for('static', filename='default-avatar.svg') }}';"
+                     onerror="handleImageError(this)"
                      loading="lazy">
                 {% else %}
                 <div class="employee-avatar-placeholder">
@@ -445,7 +445,8 @@
                 
                 {% if employee.id != current_user.id %}
                 <button class="action-btn btn-role {% if employee.is_admin %}admin{% endif %}" 
-                        onclick="toggleRole({{ employee.id }}, '{% if employee.is_admin %}employee{% else %}admin{% endif %}')">
+                        data-employee-id="{{ employee.id }}" 
+                        data-new-role="{% if employee.is_admin %}employee{% else %}admin{% endif %}">
                     <i class="fas {% if employee.is_admin %}fa-user-minus{% else %}fa-user-plus{% endif %}"></i>
                     {% if employee.is_admin %}ลดสิทธิ์{% else %}เพิ่มสิทธิ์{% endif %}
                 </button>
@@ -503,9 +504,36 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
+// Handle image loading errors
+function handleImageError(imgElement) {
+    imgElement.src = "{{ url_for('static', filename='default-avatar.svg') }}";
+    imgElement.style.display = "block";
+}
+
+// Handle role toggle
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all role toggle buttons
+    const roleButtons = document.querySelectorAll('.btn-role');
+    roleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const employeeId = this.getAttribute('data-employee-id');
+            const newRole = this.getAttribute('data-new-role');
+            toggleRole(employeeId, newRole);
+        });
+    });
+});
+
 // Toggle employee role
 async function toggleRole(employeeId, newRole) {
-    const button = event.target.closest('.btn-role');
+    // Find the button for this employee
+    const buttons = document.querySelectorAll(`button[data-employee-id="${employeeId}"]`);
+    const button = buttons.length > 0 ? buttons[0] : null;
+    
+    if (!button) {
+        showNotification('ไม่พบปุ่มที่เกี่ยวข้อง', 'error');
+        return;
+    }
+    
     const originalHTML = button.innerHTML;
     
     try {

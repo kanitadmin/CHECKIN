@@ -135,7 +135,7 @@ class DatabaseManager:
                     cursor.execute(query, params or ())
                     
                     if fetch_results:
-                        results = cursor.fetchall()
+                        results = list(cursor.fetchall())
                         connection.commit()
                         return results
                     else:
@@ -196,6 +196,7 @@ CREATE TABLE IF NOT EXISTS employees (
     picture_url VARCHAR(255),
     role ENUM('employee', 'admin') DEFAULT 'employee',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_google_id (google_id),
     INDEX idx_email (email),
     INDEX idx_role (role)
@@ -391,6 +392,32 @@ def migrate_database() -> None:
             logger.info("Department ID column added successfully")
         else:
             logger.info("Department ID column already exists, skipping migration")
+            
+        # Check if updated_at column exists in employees table
+        check_updated_at_column_query = """
+            SELECT COUNT(*) as count
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = %s 
+            AND TABLE_NAME = 'employees' 
+            AND COLUMN_NAME = 'updated_at'
+        """
+        
+        result = db_manager.execute_query(
+            check_updated_at_column_query, 
+            (os.getenv('DB_NAME'),), 
+            fetch_results=True
+        )
+        
+        if result and result[0]['count'] == 0:
+            logger.info("Adding updated_at column to employees table...")
+            add_updated_at_column_query = """
+                ALTER TABLE employees 
+                ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at
+            """
+            db_manager.execute_query(add_updated_at_column_query)
+            logger.info("Updated at column added successfully")
+        else:
+            logger.info("Updated at column already exists, skipping migration")
         
         logger.info("Database migrations completed successfully")
         

@@ -389,7 +389,12 @@ def auth_callback():
         
         # Validate and sanitize required user info fields
         email = sanitize_user_input(user_info.get('email'))
-        google_id = sanitize_user_input(user_info.get('sub'))
+        google_id = sanitize_user_input(user_info.get('sub'))  # Google ID is in 'sub' field
+        
+        # Fix: Ensure the user_info dict has 'id' key for the create_or_update method
+        if 'id' not in user_info and 'sub' in user_info:
+            user_info['id'] = user_info['sub']
+        
         picture_url = user_info.get('picture')
         
         # Log user info for debugging (remove in production)

@@ -5,50 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบลงเวลา Pro - เข้าสู่ระบบพนักงาน</title>
     
-    <!-- Modern CSS Framework and Fonts -->
+    <!-- Apple Design System -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='apple-design-system.css') }}" rel="stylesheet">
     
     <style>
         :root {
-            /* Modern Color Palette */
-            --primary-50: #f0f9ff;
-            --primary-100: #e0f2fe;
-            --primary-500: #0ea5e9;
-            --primary-600: #0284c7;
-            --primary-700: #0369a1;
-            --primary-900: #0c4a6e;
-            
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            
-            --error-50: #fef2f2;
-            --error-500: #ef4444;
-            --error-600: #dc2626;
+            /* Apple-inspired Color Palette */
+            --apple-system-blue: #0071e3;
+            --apple-system-blue-dark: #005bb7;
+            --apple-system-gray: #86868b;
+            --apple-system-gray-light: #f5f5f7;
+            --apple-system-gray-dark: #1d1d1f;
+            --apple-system-red: #ff453a;
             
             /* Typography */
-            --font-family: 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --apple-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Noto Sans Thai";
             
-            /* Shadows */
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            /* Spacing */
+            --apple-spacing-1: 0.25rem;
+            --apple-spacing-2: 0.5rem;
+            --apple-spacing-3: 0.75rem;
+            --apple-spacing-4: 1rem;
+            --apple-spacing-5: 1.25rem;
+            --apple-spacing-6: 1.5rem;
+            --apple-spacing-8: 2rem;
+            --apple-spacing-10: 2.5rem;
+            --apple-spacing-12: 3rem;
+            --apple-spacing-16: 4rem;
             
             /* Border Radius */
-            --radius-sm: 0.375rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
-            --radius-2xl: 1.5rem;
+            --apple-radius-sm: 0.25rem;
+            --apple-radius-md: 0.375rem;
+            --apple-radius-lg: 0.5rem;
+            --apple-radius-xl: 0.75rem;
+            --apple-radius-2xl: 1rem;
+            --apple-radius-3xl: 1.5rem;
+            
+            /* Shadows */
+            --apple-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --apple-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --apple-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --apple-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            
+            /* Transitions */
+            --apple-transition-fast: 150ms cubic-bezier(0.25, 0.1, 0.25, 1);
+            --apple-transition-normal: 250ms cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         
         * {
@@ -58,14 +61,16 @@
         }
         
         body {
-            font-family: var(--font-family);
-            background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+            font-family: var(--apple-font-family);
+            background: var(--apple-system-gray-light);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         /* Background Pattern */
@@ -77,113 +82,119 @@
             right: 0;
             bottom: 0;
             background-image: 
-                radial-gradient(circle at 25% 25%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
+                radial-gradient(circle at 25% 25%, rgba(0, 113, 227, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(0, 113, 227, 0.03) 0%, transparent 50%);
             pointer-events: none;
         }
         
         .login-container {
-            background: white;
-            border-radius: var(--radius-2xl);
-            padding: 3rem;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid var(--gray-200);
+            background: #ffffff;
+            border-radius: var(--apple-radius-3xl);
+            padding: var(--apple-spacing-12);
+            box-shadow: var(--apple-shadow-xl);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             max-width: 480px;
             width: 100%;
-            margin: 2rem;
+            margin: var(--apple-spacing-8);
             position: relative;
             z-index: 1;
+            transition: var(--apple-transition-normal);
+        }
+        
+        .login-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         
         .login-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: var(--apple-spacing-8);
         }
         
         .logo-section {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            gap: var(--apple-spacing-3);
+            margin-bottom: var(--apple-spacing-4);
         }
         
         .logo-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
-            border-radius: var(--radius-xl);
+            width: 60px;
+            height: 60px;
+            background: var(--apple-system-blue);
+            border-radius: var(--apple-radius-xl);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.75rem;
             color: white;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--apple-shadow-lg);
         }
         
         .logo-text h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--gray-900);
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--apple-system-gray-dark);
             margin: 0;
             letter-spacing: -0.025em;
         }
         
         .logo-text .subtitle {
             font-size: 1rem;
-            color: var(--gray-600);
+            color: var(--apple-system-gray);
             font-weight: 400;
             margin-top: 0.25rem;
         }
         
         .welcome-text {
-            color: var(--gray-600);
-            font-size: 1.1rem;
+            color: var(--apple-system-gray);
+            font-size: var(--apple-font-size-lg);
             line-height: 1.6;
-            margin-bottom: 2rem;
+            margin-bottom: var(--apple-spacing-6);
         }
         
-        .google-btn {
-            background: white;
-            color: var(--gray-700);
-            border: 2px solid var(--gray-200);
-            padding: 1rem 2rem;
-            border-radius: var(--radius-lg);
+        .apple-btn {
+            background: #ffffff;
+            color: var(--apple-system-gray-dark);
+            border: 1px solid var(--apple-system-gray);
+            padding: var(--apple-spacing-3) var(--apple-spacing-4);
+            border-radius: var(--apple-radius-xl);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            gap: var(--apple-spacing-3);
+            font-size: var(--apple-font-size-lg);
+            font-weight: 500;
+            transition: var(--apple-transition-fast);
             width: 100%;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--apple-shadow-sm);
             position: relative;
             overflow: hidden;
         }
         
-        .google-btn::before {
+        .apple-btn::before {
             content: '';
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(66, 133, 244, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0, 113, 227, 0.1), transparent);
             transition: left 0.5s;
         }
         
-        .google-btn:hover::before {
+        .apple-btn:hover::before {
             left: 100%;
         }
         
-        .google-btn:hover {
-            border-color: var(--primary-300);
-            color: var(--primary-700);
+        .apple-btn:hover {
+            border-color: var(--apple-system-blue);
+            color: var(--apple-system-blue);
             text-decoration: none;
             transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--apple-shadow-md);
         }
         
         .google-icon {
@@ -192,36 +203,36 @@
         }
         
         .security-notice {
-            background: var(--gray-50);
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            margin-top: 2rem;
+            background: var(--apple-system-gray-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: var(--apple-radius-2xl);
+            padding: var(--apple-spacing-6);
+            margin-top: var(--apple-spacing-6);
             text-align: center;
         }
         
         .security-notice-icon {
             width: 40px;
             height: 40px;
-            background: var(--primary-100);
-            border-radius: 50%;
+            background: rgba(0, 113, 227, 0.1);
+            border-radius: var(--apple-radius-full);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
-            color: var(--primary-600);
+            margin: 0 auto var(--apple-spacing-3);
+            color: var(--apple-system-blue);
         }
         
         .security-notice h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: 0.5rem;
+            font-size: var(--apple-font-size-base);
+            font-weight: 500;
+            color: var(--apple-system-gray-dark);
+            margin-bottom: var(--apple-spacing-2);
         }
         
         .security-notice p {
-            font-size: 0.9rem;
-            color: var(--gray-600);
+            font-size: var(--apple-font-size-sm);
+            color: var(--apple-system-gray);
             line-height: 1.5;
         }
         
@@ -229,71 +240,71 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: var(--primary-50);
-            color: var(--primary-700);
+            background: rgba(0, 113, 227, 0.1);
+            color: var(--apple-system-blue);
             padding: 0.375rem 0.75rem;
-            border-radius: var(--radius-md);
+            border-radius: var(--apple-radius-full);
             font-weight: 500;
-            font-size: 0.875rem;
-            border: 1px solid var(--primary-200);
+            font-size: var(--apple-font-size-sm);
+            border: 1px solid rgba(0, 113, 227, 0.2);
         }
         
         /* Flash Messages */
         .flash-messages {
-            margin-bottom: 2rem;
+            margin-bottom: var(--apple-spacing-6);
         }
         
         .flash-message {
-            padding: 1rem 1.25rem;
-            border-radius: var(--radius-lg);
-            margin-bottom: 1rem;
+            padding: var(--apple-spacing-4);
+            border-radius: var(--apple-radius-2xl);
+            margin-bottom: var(--apple-spacing-3);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: var(--apple-spacing-3);
             font-weight: 500;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--apple-shadow-sm);
             border-left: 4px solid;
         }
         
         .flash-error {
-            background-color: var(--error-50);
-            color: var(--error-600);
-            border-left-color: var(--error-500);
+            background-color: rgba(255, 69, 58, 0.1);
+            color: #b3221a;
+            border-left-color: var(--apple-system-red);
         }
         
         /* Features List */
         .features-list {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--gray-200);
+            margin-top: var(--apple-spacing-6);
+            padding-top: var(--apple-spacing-6);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .features-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: 1rem;
+            font-size: var(--apple-font-size-base);
+            font-weight: 500;
+            color: var(--apple-system-gray-dark);
+            margin-bottom: var(--apple-spacing-4);
             text-align: center;
         }
         
         .feature-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            color: var(--gray-600);
-            font-size: 0.9rem;
+            gap: var(--apple-spacing-3);
+            margin-bottom: var(--apple-spacing-3);
+            color: var(--apple-system-gray);
+            font-size: var(--apple-font-size-sm);
         }
         
         .feature-icon {
             width: 20px;
             height: 20px;
-            background: var(--success-100);
-            border-radius: 50%;
+            background: rgba(50, 215, 75, 0.1);
+            border-radius: var(--apple-radius-full);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--success-600);
+            color: var(--apple-system-green);
             font-size: 0.75rem;
             flex-shrink: 0;
         }
@@ -301,17 +312,17 @@
         /* Responsive Design */
         @media (max-width: 640px) {
             .login-container {
-                margin: 1rem;
-                padding: 2rem;
+                margin: var(--apple-spacing-4);
+                padding: var(--apple-spacing-8);
             }
             
             .logo-section {
                 flex-direction: column;
-                gap: 0.75rem;
+                gap: var(--apple-spacing-2);
             }
             
             .logo-text h1 {
-                font-size: 1.75rem;
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -348,7 +359,7 @@
             {% endif %}
         {% endwith %}
         
-        <a href="{{ url_for('auth_google') }}" class="google-btn">
+        <a href="{{ url_for('auth_google') }}" class="apple-btn">
             <svg class="google-icon" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

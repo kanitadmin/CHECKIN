@@ -6,57 +6,54 @@
 
     <title>{% block title %}ระบบลงเวลาทำงาน{% endblock %}</title>
     
-    <!-- Modern CSS Framework and Fonts -->
+    <!-- Apple Design System -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='apple-design-system.css') }}" rel="stylesheet">
     
     <style>
         :root {
-            /* Modern Color Palette */
-            --primary-50: #f0f9ff;
-            --primary-100: #e0f2fe;
-            --primary-500: #0ea5e9;
-            --primary-600: #0284c7;
-            --primary-700: #0369a1;
-            --primary-900: #0c4a6e;
-            
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            
-            --success-50: #f0fdf4;
-            --success-500: #22c55e;
-            --success-600: #16a34a;
-            
-            --warning-50: #fffbeb;
-            --warning-500: #f59e0b;
-            --warning-600: #d97706;
-            
-            --error-50: #fef2f2;
-            --error-500: #ef4444;
-            --error-600: #dc2626;
+            /* Apple-inspired Color Palette */
+            --apple-system-blue: #0071e3;
+            --apple-system-blue-dark: #005bb7;
+            --apple-system-gray: #86868b;
+            --apple-system-gray-light: #f5f5f7;
+            --apple-system-gray-dark: #1d1d1f;
+            --apple-system-green: #32d74b;
+            --apple-system-red: #ff453a;
+            --apple-system-orange: #ff9f0a;
             
             /* Typography */
-            --font-family: 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --apple-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Noto Sans Thai";
             
-            /* Shadows */
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            /* Spacing */
+            --apple-spacing-1: 0.25rem;
+            --apple-spacing-2: 0.5rem;
+            --apple-spacing-3: 0.75rem;
+            --apple-spacing-4: 1rem;
+            --apple-spacing-5: 1.25rem;
+            --apple-spacing-6: 1.5rem;
+            --apple-spacing-8: 2rem;
+            --apple-spacing-10: 2.5rem;
+            --apple-spacing-12: 3rem;
             
             /* Border Radius */
-            --radius-sm: 0.375rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
+            --apple-radius-sm: 0.25rem;
+            --apple-radius-md: 0.375rem;
+            --apple-radius-lg: 0.5rem;
+            --apple-radius-xl: 0.75rem;
+            --apple-radius-2xl: 1rem;
+            --apple-radius-3xl: 1.5rem;
+            
+            /* Shadows */
+            --apple-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --apple-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --apple-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --apple-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            
+            /* Transitions */
+            --apple-transition-fast: 150ms cubic-bezier(0.25, 0.1, 0.25, 1);
+            --apple-transition-normal: 250ms cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         
         * {
@@ -66,97 +63,94 @@
         }
         
         body {
-            font-family: var(--font-family);
-            background-color: var(--gray-50);
-            color: var(--gray-900);
+            font-family: var(--apple-font-family);
+            background-color: #ffffff;
+            color: var(--apple-system-gray-dark);
             line-height: 1.6;
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
-        .container {
+        .apple-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 1.5rem;
+            padding: 0 var(--apple-spacing-6);
         }
         
-        /* Modern Header */
-        .header {
-            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
-            color: white;
-            padding: 1.5rem 0;
-            box-shadow: var(--shadow-lg);
+        /* Apple-inspired Header */
+        .apple-header {
+            background: #ffffff;
+            color: var(--apple-system-gray-dark);
+            padding: var(--apple-spacing-4) 0;
+            box-shadow: var(--apple-shadow-sm);
             position: relative;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
-        }
-        
-        .header-content {
+        .apple-header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
-            z-index: 1;
         }
         
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: var(--apple-spacing-3);
         }
         
         .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: var(--radius-lg);
+            width: 40px;
+            height: 40px;
+            background: var(--apple-system-blue);
+            border-radius: var(--apple-radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+            color: white;
         }
         
         .logo-text h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 600;
             margin: 0;
             letter-spacing: -0.025em;
+            color: var(--apple-system-gray-dark);
         }
         
         .logo-text .subtitle {
-            font-size: 0.875rem;
-            opacity: 0.9;
+            font-size: 0.8125rem;
+            color: var(--apple-system-gray);
             font-weight: 400;
+            margin-top: 0.125rem;
         }
         
         .user-info {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: var(--apple-spacing-4);
         }
         
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-lg);
-            backdrop-filter: blur(10px);
+            gap: var(--apple-spacing-3);
+            padding: var(--apple-spacing-2) var(--apple-spacing-3);
+            border-radius: var(--apple-radius-lg);
+            transition: var(--apple-transition-fast);
+        }
+        
+        .user-profile:hover {
+            background: var(--apple-system-gray-light);
         }
         
         .user-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            width: 36px;
+            height: 36px;
+            border-radius: var(--apple-radius-full);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             object-fit: cover;
             transition: opacity 0.3s ease;
         }
@@ -164,16 +158,8 @@
         .user-avatar img {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
+            border-radius: var(--apple-radius-full);
             object-fit: cover;
-        }
-        
-        .user-avatar.loading {
-            opacity: 0.7;
-        }
-        
-        .user-avatar.error {
-            display: none !important;
         }
         
         .user-details {
@@ -182,98 +168,130 @@
         }
         
         .user-name {
-            font-weight: 600;
-            font-size: 0.95rem;
+            font-weight: 500;
+            font-size: 0.875rem;
             margin: 0;
+            color: var(--apple-system-gray-dark);
         }
         
         .user-email {
-            font-size: 0.8rem;
-            opacity: 0.8;
+            font-size: 0.75rem;
+            color: var(--apple-system-gray);
             margin: 0;
         }
         
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 0.75rem 1.25rem;
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            display: flex;
+        .admin-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            backdrop-filter: blur(10px);
+            gap: 0.25rem;
+            background: rgba(0, 113, 227, 0.1);
+            color: var(--apple-system-blue);
+            padding: 0.125rem 0.5rem;
+            border-radius: var(--apple-radius-full);
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.125rem;
         }
         
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
+        .apple-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--apple-font-family);
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.5;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid transparent;
+            border-radius: var(--apple-radius-lg);
+            padding: var(--apple-spacing-2) var(--apple-spacing-3);
+            transition: var(--apple-transition-fast);
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--apple-system-blue);
+            color: #ffffff;
+        }
+        
+        .apple-btn:hover {
+            background-color: var(--apple-system-blue-dark);
             text-decoration: none;
             transform: translateY(-1px);
         }
         
+        .apple-btn-secondary {
+            background-color: #ffffff;
+            color: var(--apple-system-gray-dark);
+            border: 1px solid var(--apple-system-gray);
+        }
+        
+        .apple-btn-secondary:hover {
+            background-color: var(--apple-system-gray-light);
+            border-color: var(--apple-system-gray-dark);
+        }
+        
         /* Main Content */
         main {
-            padding: 2rem 0;
+            padding: var(--apple-spacing-8) 0;
             min-height: calc(100vh - 120px);
         }
         
-        /* Modern Flash Messages */
+        /* Apple-inspired Flash Messages */
         .flash-messages {
-            margin-bottom: 2rem;
+            margin-bottom: var(--apple-spacing-6);
         }
         
         .flash-message {
-            padding: 1rem 1.25rem;
-            border-radius: var(--radius-lg);
-            margin-bottom: 1rem;
+            padding: var(--apple-spacing-4);
+            border-radius: var(--apple-radius-xl);
+            margin-bottom: var(--apple-spacing-3);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: var(--apple-spacing-3);
             font-weight: 500;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--apple-shadow-sm);
             border-left: 4px solid;
         }
         
         .flash-error {
-            background-color: var(--error-50);
-            color: var(--error-600);
-            border-left-color: var(--error-500);
+            background-color: rgba(255, 69, 58, 0.1);
+            color: #b3221a;
+            border-left-color: var(--apple-system-red);
         }
         
         .flash-info {
-            background-color: var(--primary-50);
-            color: var(--primary-700);
-            border-left-color: var(--primary-500);
+            background-color: rgba(0, 113, 227, 0.1);
+            color: var(--apple-system-blue-dark);
+            border-left-color: var(--apple-system-blue);
         }
         
         .flash-success {
-            background-color: var(--success-50);
-            color: var(--success-600);
-            border-left-color: var(--success-500);
+            background-color: rgba(50, 215, 75, 0.1);
+            color: #247a36;
+            border-left-color: var(--apple-system-green);
         }
         
         .flash-warning {
-            background-color: var(--warning-50);
-            color: var(--warning-600);
-            border-left-color: var(--warning-500);
+            background-color: rgba(255, 159, 10, 0.1);
+            color: #b36d0a;
+            border-left-color: var(--apple-system-orange);
         }
         
         /* Responsive Design */
         @media (max-width: 768px) {
-            .header-content {
+            .apple-header-content {
                 flex-direction: column;
-                gap: 1rem;
+                gap: var(--apple-spacing-4);
                 text-align: center;
             }
             
             .user-info {
                 flex-direction: column;
-                gap: 1rem;
+                gap: var(--apple-spacing-3);
             }
             
             .user-profile {
@@ -281,8 +299,12 @@
                 text-align: center;
             }
             
-            .container {
-                padding: 0 1rem;
+            .apple-container {
+                padding: 0 var(--apple-spacing-4);
+            }
+            
+            main {
+                padding: var(--apple-spacing-6) 0;
             }
         }
         
@@ -304,9 +326,9 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
+    <header class="apple-header">
+        <div class="apple-container">
+            <div class="apple-header-content">
                 <div class="logo-section">
                     <div class="logo-icon">
                         <i class="fas fa-clock"></i>
@@ -335,19 +357,20 @@
                             <div class="user-name">{{ current_user.name or 'User' }}</div>
                             <div class="user-email">{{ current_user.email }}</div>
                             {% if current_user.is_admin %}
-                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.8);">
-                                <i class="fas fa-user-shield"></i> ผู้ดูแลระบบ
+                            <div class="admin-badge">
+                                <i class="fas fa-user-shield"></i>
+                                ผู้ดูแลระบบ
                             </div>
                             {% endif %}
                         </div>
                     </div>
                     {% if current_user.is_admin %}
-                    <a href="{{ url_for('admin_dashboard') }}" class="logout-btn" style="margin-right: 0.5rem;">
+                    <a href="{{ url_for('admin_dashboard') }}" class="apple-btn apple-btn-secondary">
                         <i class="fas fa-user-shield"></i>
                         จัดการระบบ
                     </a>
                     {% endif %}
-                    <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <a href="{{ url_for('logout') }}" class="apple-btn">
                         <i class="fas fa-sign-out-alt"></i>
                         ออกจากระบบ
                     </a>
@@ -357,7 +380,7 @@
         </div>
     </header>
 
-    <main class="container">
+    <main class="apple-container">
         <!-- Flash messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

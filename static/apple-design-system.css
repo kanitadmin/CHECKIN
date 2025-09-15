@@ -1,0 +1,791 @@
+:root {
+  /* Apple-inspired Color Palette */
+  --apple-system-blue: #0071e3;
+  --apple-system-blue-dark: #005bb7;
+  --apple-system-blue-light: #2997ff;
+  --apple-system-gray: #86868b;
+  --apple-system-gray-light: #f5f5f7;
+  --apple-system-gray-dark: #1d1d1f;
+  --apple-system-green: #32d74b;
+  --apple-system-red: #ff453a;
+  --apple-system-orange: #ff9f0a;
+  --apple-system-yellow: #ffd60a;
+  --apple-system-purple: #bf5af2;
+  --apple-system-pink: #ff375f;
+  
+  /* Typography */
+  --apple-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --apple-font-size-xs: 0.75rem;
+  --apple-font-size-sm: 0.875rem;
+  --apple-font-size-base: 1rem;
+  --apple-font-size-lg: 1.125rem;
+  --apple-font-size-xl: 1.25rem;
+  --apple-font-size-2xl: 1.5rem;
+  --apple-font-size-3xl: 1.875rem;
+  --apple-font-size-4xl: 2.25rem;
+  --apple-font-size-5xl: 3rem;
+  --apple-font-size-6xl: 3.75rem;
+  --apple-font-weight-light: 300;
+  --apple-font-weight-normal: 400;
+  --apple-font-weight-medium: 500;
+  --apple-font-weight-semibold: 600;
+  --apple-font-weight-bold: 700;
+  
+  /* Spacing */
+  --apple-spacing-0: 0;
+  --apple-spacing-1: 0.25rem;
+  --apple-spacing-2: 0.5rem;
+  --apple-spacing-3: 0.75rem;
+  --apple-spacing-4: 1rem;
+  --apple-spacing-5: 1.25rem;
+  --apple-spacing-6: 1.5rem;
+  --apple-spacing-7: 1.75rem;
+  --apple-spacing-8: 2rem;
+  --apple-spacing-9: 2.25rem;
+  --apple-spacing-10: 2.5rem;
+  --apple-spacing-11: 2.75rem;
+  --apple-spacing-12: 3rem;
+  --apple-spacing-14: 3.5rem;
+  --apple-spacing-16: 4rem;
+  --apple-spacing-20: 5rem;
+  --apple-spacing-24: 6rem;
+  --apple-spacing-28: 7rem;
+  --apple-spacing-32: 8rem;
+  --apple-spacing-36: 9rem;
+  --apple-spacing-40: 10rem;
+  --apple-spacing-44: 11rem;
+  --apple-spacing-48: 12rem;
+  --apple-spacing-52: 13rem;
+  --apple-spacing-56: 14rem;
+  --apple-spacing-60: 15rem;
+  --apple-spacing-64: 16rem;
+  --apple-spacing-72: 18rem;
+  --apple-spacing-80: 20rem;
+  --apple-spacing-96: 24rem;
+  
+  /* Border Radius */
+  --apple-radius-xs: 0.125rem;
+  --apple-radius-sm: 0.25rem;
+  --apple-radius-md: 0.375rem;
+  --apple-radius-lg: 0.5rem;
+  --apple-radius-xl: 0.75rem;
+  --apple-radius-2xl: 1rem;
+  --apple-radius-3xl: 1.5rem;
+  --apple-radius-full: 9999px;
+  
+  /* Shadows */
+  --apple-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --apple-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --apple-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --apple-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --apple-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --apple-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --apple-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  
+  /* Transitions */
+  --apple-transition-fast: 150ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --apple-transition-normal: 250ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --apple-transition-slow: 350ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  
+  /* Z-index */
+  --apple-z-sticky: 1020;
+  --apple-z-fixed: 1030;
+  --apple-z-modal-backdrop: 1040;
+  --apple-z-modal: 1050;
+  --apple-z-popover: 1060;
+  --apple-z-tooltip: 1070;
+}
+
+/* Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--apple-font-family);
+  font-size: var(--apple-font-size-base);
+  font-weight: var(--apple-font-weight-normal);
+  line-height: 1.5;
+  color: var(--apple-system-gray-dark);
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+.apple-h1 {
+  font-size: var(--apple-font-size-4xl);
+  font-weight: var(--apple-font-weight-semibold);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-top: 0;
+  margin-bottom: var(--apple-spacing-4);
+}
+
+.apple-h2 {
+  font-size: var(--apple-font-size-3xl);
+  font-weight: var(--apple-font-weight-semibold);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-top: 0;
+  margin-bottom: var(--apple-spacing-3);
+}
+
+.apple-h3 {
+  font-size: var(--apple-font-size-2xl);
+  font-weight: var(--apple-font-weight-semibold);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-top: 0;
+  margin-bottom: var(--apple-spacing-3);
+}
+
+.apple-h4 {
+  font-size: var(--apple-font-size-xl);
+  font-weight: var(--apple-font-weight-semibold);
+  line-height: 1.25;
+  margin-top: 0;
+  margin-bottom: var(--apple-spacing-2);
+}
+
+.apple-h5 {
+  font-size: var(--apple-font-size-lg);
+  font-weight: var(--apple-font-weight-semibold);
+  line-height: 1.3;
+  margin-top: 0;
+  margin-bottom: var(--apple-spacing-2);
+}
+
+.apple-h6 {
+  font-size: var(--apple-font-size-base);
+  font-weight: var(--apple-font-weight-semibold);
+  line-height: 1.35;
+  margin-top: 0;
+  margin-bottom: var(--apple-spacing-2);
+}
+
+.apple-lead {
+  font-size: var(--apple-font-size-lg);
+  font-weight: var(--apple-font-weight-normal);
+  line-height: 1.5;
+  color: var(--apple-system-gray);
+  margin-bottom: var(--apple-spacing-4);
+}
+
+.apple-text-lg {
+  font-size: var(--apple-font-size-lg);
+}
+
+.apple-text-sm {
+  font-size: var(--apple-font-size-sm);
+}
+
+.apple-text-xs {
+  font-size: var(--apple-font-size-xs);
+}
+
+.apple-text-bold {
+  font-weight: var(--apple-font-weight-semibold);
+}
+
+.apple-text-muted {
+  color: var(--apple-system-gray);
+}
+
+/* Buttons */
+.apple-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--apple-font-family);
+  font-size: var(--apple-font-size-base);
+  font-weight: var(--apple-font-weight-medium);
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  border-radius: var(--apple-radius-lg);
+  padding: var(--apple-spacing-2) var(--apple-spacing-4);
+  transition: var(--apple-transition-fast);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.apple-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: var(--apple-transition-fast);
+}
+
+.apple-btn:hover::before {
+  opacity: 1;
+}
+
+.apple-btn:focus {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.25);
+}
+
+.apple-btn:disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Button Sizes */
+.apple-btn-sm {
+  padding: var(--apple-spacing-1) var(--apple-spacing-3);
+  font-size: var(--apple-font-size-sm);
+  border-radius: var(--apple-radius-md);
+}
+
+.apple-btn-lg {
+  padding: var(--apple-spacing-3) var(--apple-spacing-6);
+  font-size: var(--apple-font-size-lg);
+  border-radius: var(--apple-radius-xl);
+}
+
+/* Button Variants */
+.apple-btn-primary {
+  background-color: var(--apple-system-blue);
+  color: #ffffff;
+  border-color: var(--apple-system-blue);
+  box-shadow: var(--apple-shadow-sm);
+}
+
+.apple-btn-primary:hover {
+  background-color: var(--apple-system-blue-dark);
+  border-color: var(--apple-system-blue-dark);
+  box-shadow: var(--apple-shadow-md);
+}
+
+.apple-btn-primary:focus {
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.25);
+}
+
+.apple-btn-secondary {
+  background-color: #ffffff;
+  color: var(--apple-system-gray-dark);
+  border-color: var(--apple-system-gray);
+  box-shadow: var(--apple-shadow-sm);
+}
+
+.apple-btn-secondary:hover {
+  background-color: var(--apple-system-gray-light);
+  border-color: var(--apple-system-gray-dark);
+  box-shadow: var(--apple-shadow-md);
+}
+
+.apple-btn-success {
+  background-color: var(--apple-system-green);
+  color: #ffffff;
+  border-color: var(--apple-system-green);
+  box-shadow: var(--apple-shadow-sm);
+}
+
+.apple-btn-success:hover {
+  background-color: #24c93f;
+  border-color: #24c93f;
+  box-shadow: var(--apple-shadow-md);
+}
+
+.apple-btn-danger {
+  background-color: var(--apple-system-red);
+  color: #ffffff;
+  border-color: var(--apple-system-red);
+  box-shadow: var(--apple-shadow-sm);
+}
+
+.apple-btn-danger:hover {
+  background-color: #ff2b2b;
+  border-color: #ff2b2b;
+  box-shadow: var(--apple-shadow-md);
+}
+
+/* Cards */
+.apple-card {
+  background-color: #ffffff;
+  border-radius: var(--apple-radius-2xl);
+  box-shadow: var(--apple-shadow-lg);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: var(--apple-transition-normal);
+}
+
+.apple-card:hover {
+  box-shadow: var(--apple-shadow-xl);
+  transform: translateY(-2px);
+}
+
+.apple-card-header {
+  padding: var(--apple-spacing-5);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.apple-card-body {
+  padding: var(--apple-spacing-5);
+}
+
+.apple-card-footer {
+  padding: var(--apple-spacing-5);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Forms */
+.apple-form-control {
+  display: block;
+  width: 100%;
+  padding: var(--apple-spacing-2) var(--apple-spacing-3);
+  font-family: var(--apple-font-family);
+  font-size: var(--apple-font-size-base);
+  font-weight: var(--apple-font-weight-normal);
+  line-height: 1.5;
+  color: var(--apple-system-gray-dark);
+  background-color: #ffffff;
+  background-clip: padding-box;
+  border: 1px solid var(--apple-system-gray);
+  border-radius: var(--apple-radius-lg);
+  transition: var(--apple-transition-fast);
+  appearance: none;
+}
+
+.apple-form-control:focus {
+  color: var(--apple-system-gray-dark);
+  background-color: #ffffff;
+  border-color: var(--apple-system-blue);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.25);
+}
+
+.apple-form-control::placeholder {
+  color: var(--apple-system-gray);
+  opacity: 1;
+}
+
+.apple-form-control:disabled {
+  background-color: var(--apple-system-gray-light);
+  opacity: 1;
+}
+
+.apple-form-label {
+  display: inline-block;
+  margin-bottom: var(--apple-spacing-1);
+  font-weight: var(--apple-font-weight-medium);
+  color: var(--apple-system-gray-dark);
+}
+
+.apple-form-text {
+  display: block;
+  margin-top: var(--apple-spacing-1);
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-system-gray);
+}
+
+/* Alerts */
+.apple-alert {
+  position: relative;
+  padding: var(--apple-spacing-4);
+  margin-bottom: var(--apple-spacing-4);
+  border: 1px solid transparent;
+  border-radius: var(--apple-radius-xl);
+}
+
+.apple-alert-primary {
+  color: var(--apple-system-blue-dark);
+  background-color: rgba(0, 113, 227, 0.1);
+  border-color: rgba(0, 113, 227, 0.2);
+}
+
+.apple-alert-success {
+  color: #247a36;
+  background-color: rgba(50, 215, 75, 0.1);
+  border-color: rgba(50, 215, 75, 0.2);
+}
+
+.apple-alert-danger {
+  color: #b3221a;
+  background-color: rgba(255, 69, 58, 0.1);
+  border-color: rgba(255, 69, 58, 0.2);
+}
+
+.apple-alert-warning {
+  color: #b36d0a;
+  background-color: rgba(255, 159, 10, 0.1);
+  border-color: rgba(255, 159, 10, 0.2);
+}
+
+/* Badges */
+.apple-badge {
+  display: inline-block;
+  padding: var(--apple-spacing-1) var(--apple-spacing-2);
+  font-size: var(--apple-font-size-xs);
+  font-weight: var(--apple-font-weight-semibold);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: var(--apple-radius-full);
+  transition: var(--apple-transition-fast);
+}
+
+.apple-badge-primary {
+  color: #ffffff;
+  background-color: var(--apple-system-blue);
+}
+
+.apple-badge-success {
+  color: #ffffff;
+  background-color: var(--apple-system-green);
+}
+
+.apple-badge-danger {
+  color: #ffffff;
+  background-color: var(--apple-system-red);
+}
+
+.apple-badge-warning {
+  color: #ffffff;
+  background-color: var(--apple-system-orange);
+}
+
+/* Tables */
+.apple-table {
+  width: 100%;
+  margin-bottom: var(--apple-spacing-4);
+  color: var(--apple-system-gray-dark);
+  vertical-align: top;
+  border-collapse: collapse;
+}
+
+.apple-table th,
+.apple-table td {
+  padding: var(--apple-spacing-3);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+.apple-table th {
+  font-weight: var(--apple-font-weight-semibold);
+  color: var(--apple-system-gray);
+  font-size: var(--apple-font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.apple-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.apple-table-sm th,
+.apple-table-sm td {
+  padding: var(--apple-spacing-2);
+}
+
+/* Navigation */
+.apple-nav {
+  display: flex;
+  flex-wrap: wrap;
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.apple-nav-link {
+  display: block;
+  padding: var(--apple-spacing-2) var(--apple-spacing-3);
+  font-weight: var(--apple-font-weight-medium);
+  color: var(--apple-system-gray);
+  text-decoration: none;
+  transition: var(--apple-transition-fast);
+  border-radius: var(--apple-radius-lg);
+}
+
+.apple-nav-link:hover,
+.apple-nav-link:focus {
+  color: var(--apple-system-blue);
+  text-decoration: none;
+}
+
+.apple-nav-link.active {
+  color: var(--apple-system-blue);
+  background-color: rgba(0, 113, 227, 0.1);
+}
+
+/* Utilities */
+.apple-rounded {
+  border-radius: var(--apple-radius-lg);
+}
+
+.apple-rounded-full {
+  border-radius: var(--apple-radius-full);
+}
+
+.apple-shadow {
+  box-shadow: var(--apple-shadow-lg);
+}
+
+.apple-shadow-sm {
+  box-shadow: var(--apple-shadow-sm);
+}
+
+.apple-shadow-md {
+  box-shadow: var(--apple-shadow-md);
+}
+
+.apple-shadow-lg {
+  box-shadow: var(--apple-shadow-lg);
+}
+
+.apple-shadow-xl {
+  box-shadow: var(--apple-shadow-xl);
+}
+
+.apple-shadow-none {
+  box-shadow: none;
+}
+
+.apple-text-center {
+  text-align: center;
+}
+
+.apple-text-left {
+  text-align: left;
+}
+
+.apple-text-right {
+  text-align: right;
+}
+
+.apple-d-flex {
+  display: flex;
+}
+
+.apple-d-inline-flex {
+  display: inline-flex;
+}
+
+.apple-justify-content-start {
+  justify-content: flex-start;
+}
+
+.apple-justify-content-end {
+  justify-content: flex-end;
+}
+
+.apple-justify-content-center {
+  justify-content: center;
+}
+
+.apple-justify-content-between {
+  justify-content: space-between;
+}
+
+.apple-justify-content-around {
+  justify-content: space-around;
+}
+
+.apple-align-items-start {
+  align-items: flex-start;
+}
+
+.apple-align-items-end {
+  align-items: flex-end;
+}
+
+.apple-align-items-center {
+  align-items: center;
+}
+
+.apple-align-items-baseline {
+  align-items: baseline;
+}
+
+.apple-align-items-stretch {
+  align-items: stretch;
+}
+
+.apple-w-100 {
+  width: 100%;
+}
+
+.apple-h-100 {
+  height: 100%;
+}
+
+.apple-m-0 {
+  margin: 0;
+}
+
+.apple-mt-0 {
+  margin-top: 0;
+}
+
+.apple-mb-0 {
+  margin-bottom: 0;
+}
+
+.apple-p-0 {
+  padding: 0;
+}
+
+.apple-pt-0 {
+  padding-top: 0;
+}
+
+.apple-pb-0 {
+  padding-bottom: 0;
+}
+
+/* Responsive Breakpoints */
+@media (min-width: 576px) {
+  .apple-container {
+    max-width: 540px;
+  }
+}
+
+@media (min-width: 768px) {
+  .apple-container {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 992px) {
+  .apple-container {
+    max-width: 960px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .apple-container {
+    max-width: 1140px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .apple-container {
+    max-width: 1320px;
+  }
+}
+
+/* Container */
+.apple-container {
+  width: 100%;
+  padding-right: var(--apple-spacing-4);
+  padding-left: var(--apple-spacing-4);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* Grid System */
+.apple-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: calc(var(--apple-spacing-4) * -1);
+  margin-left: calc(var(--apple-spacing-4) * -1);
+}
+
+.apple-col {
+  flex: 1 0 0%;
+  padding-right: var(--apple-spacing-4);
+  padding-left: var(--apple-spacing-4);
+}
+
+.apple-col-auto {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.apple-col-1 {
+  flex: 0 0 8.333333%;
+  max-width: 8.333333%;
+}
+
+.apple-col-2 {
+  flex: 0 0 16.666667%;
+  max-width: 16.666667%;
+}
+
+.apple-col-3 {
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+.apple-col-4 {
+  flex: 0 0 33.333333%;
+  max-width: 33.333333%;
+}
+
+.apple-col-5 {
+  flex: 0 0 41.666667%;
+  max-width: 41.666667%;
+}
+
+.apple-col-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.apple-col-7 {
+  flex: 0 0 58.333333%;
+  max-width: 58.333333%;
+}
+
+.apple-col-8 {
+  flex: 0 0 66.666667%;
+  max-width: 66.666667%;
+}
+
+.apple-col-9 {
+  flex: 0 0 75%;
+  max-width: 75%;
+}
+
+.apple-col-10 {
+  flex: 0 0 83.333333%;
+  max-width: 83.333333%;
+}
+
+.apple-col-11 {
+  flex: 0 0 91.666667%;
+  max-width: 91.666667%;
+}
+
+.apple-col-12 {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+/* Responsive Utilities */
+@media (max-width: 767.98px) {
+  .apple-d-none-mobile {
+    display: none !important;
+  }
+  
+  .apple-col-mobile-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .apple-d-none-tablet {
+    display: none !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .apple-d-none-desktop {
+    display: none !important;
+  }
+}
